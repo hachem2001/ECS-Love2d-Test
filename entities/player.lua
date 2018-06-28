@@ -25,6 +25,10 @@ function player:draw()
 	camera:set_position(self.body.pos[1], self.body.pos[2]);
 end
 
+function player:is_on_ground()
+	return self.body.vel[2]==0 and self.body.py<0;
+end
+
 function player:update(dt)
 	if love.keyboard.isDown("right") then
 		self.body.vel[1] = 100;
@@ -34,7 +38,7 @@ function player:update(dt)
 		self.body.vel[1] = 0;
 	end
 
-	if love.keyboard.isDown("up") then
+	if love.keyboard.isDown("up") and self:is_on_ground() then
 		self.body.vel[2] = -100;
 	end
 end

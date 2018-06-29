@@ -10,7 +10,8 @@ ECS._entities_path	  = "entities/"
 ECS._components_path	= "components/"
 
 ECS._entity_names = {
-	player = "player.lua"
+	player = "player.lua",
+	npcs = "npcs.lua"
 }
 
 ECS._component_names = {

@@ -88,7 +88,7 @@ function vector.getrotationdirection(vec1, vec2) -- only works if both vectors a
 	return vec1[1]*vec2[2]-vec1[2]*vec2[1]
 end
 
-function vector.getlenght(vec1)
+function vector.getlength(vec1)
 	local s = 0
 	for k,v in pairs(vec1) do
 		s = s + v^2

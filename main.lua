@@ -28,9 +28,11 @@ function love.load()
 	-- Add some blocks
 	world:add_block(32, 32, 32, 32);
 	world:add_block(64, 32, 32, 32);
-	world:add_block(96, 32, 32, 32);
+	world:add_block(96, 32, 256, 32);
 	-- Add a player
+
 	ECS:new_entity("player", {x=32, y=0, w=32, h=32})
+	ECS:new_entity("npcs", {x=65, y=0, w=32, h=32})
 end
 
 --
@@ -48,8 +50,10 @@ end
 
 function love.update(dt)
 	mousex,mousey	= love.mouse.getPosition()				-- Update the position of the mouse ( in any circumstances )
-	camera:update(dt)
 	ECS:update(dt);
+
+	camera:set_position(ECS.entities["player"].body.pos[1], ECS.entities["player"].body.pos[2])
+	camera:update(dt);
 end
 
 function love.keypressed(const, scancode, isrepeat)

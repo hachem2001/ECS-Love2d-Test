@@ -75,4 +75,11 @@ function camera:update(dt)
 	end
 end
 
+function camera:get_world_coordinates(x, y)
+	return self.transform:inverseTransformPoint(x, y)
+end
+
+function camera:get_screen_coordinates(x, y)
+	return self.transform:transformPoint(x, y)
+end
 return camera;

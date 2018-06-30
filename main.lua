@@ -26,13 +26,24 @@ function love.load()
 	--< End Initialize SYSTEMS
 
 	-- Add some blocks
-	world:add_block(32, 32, 32, 32);
-	world:add_block(64, 32, 32, 32);
-	world:add_block(96, 32, 256, 32);
+	world:add_block(0, 16, 32, 32, 0.2, 0);
+	world:add_block(32, 32, 32, 32, 0.2, 0);
+	world:add_block(64, 32, 32, 32, 0.2, 0);
+	world:add_block(96, 32, 2506, 32, 0.2, 0);
+	world:add_block(2548, 16, 32, 32, 0.2, 0);
+
 	-- Add a player
 
-	ECS:new_entity("player", {x=32, y=0, w=32, h=32})
-	ECS:new_entity("npcs", {x=65, y=0, w=32, h=32})
+	ECS:new_entity("player", {x=32, y=0, w=32, h=32, friction=0.2, bounciness=0.5})
+	--ECS:new_entity("npcs", {x=65, y=0, w=32, h=32})
+
+	-- Testing
+	-- local v = vector:new(1,2)^1;
+	-- local v2 = vector:new(1, 1);
+	-- local v3 = v*(v*v2)
+	-- print(v*v2);
+	-- print(v, v2, v3);
+	-- print(vector.getlength(v3));
 end
 
 --

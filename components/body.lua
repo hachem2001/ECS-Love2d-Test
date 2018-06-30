@@ -3,8 +3,15 @@ bodies.bodies = {};
 
 local materials = {plastic = 1, gold = 2.8, iron=7.3} -- Perhaps I'll use this at a later stage
 
-function bodies:add(x, y, w, h, m, friction) -- adds a rectangle (m is mass, friction is well, friction)
-	local m = {pos=vector:new(x, y), w = w or 1, h = h or 1, vel=vector:new(0,0), px=0, py=0, m = m or w*h}
+function bodies:add(x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
+	local m = {pos=vector:new(x, y),
+			w = w or 1, h = h or 1,
+			vel=vector:new(0,0),
+			px=0, py=0,
+			m = m or w*h,
+			friction = friction or 1,
+			bounciness = bounciness or 0,
+		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
 	local index = #self.bodies+1;
 	self.bodies[index] = m;
@@ -27,27 +34,29 @@ local function collide_world(obj, world_block) -- if bounce is needed, it can be
 		local depth2y = -dy - v2.h
 		local chx, chy = 0, 0;
 
-		if math.abs(depthx) < math.abs(depth2x) then
+		if math.abs(depthx) <= math.abs(depth2x) then
 			chx = -depthx;
 		else
 			chx = depth2x;
 		end
 
-		if math.abs(depthy) < math.abs(depth2y) then
+		if math.abs(depthy) <= math.abs(depth2y) then
 			chy = -depthy;
 		else
 			chy = depth2y;
 		end
+
+		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		if math.abs(chx) <= math.abs(chy) then
 			chy = 0;
 			v.px = v.px-chx -- Reverse this to indicate that a push on X on the opposite direction happened
-			v.vel[1] = 0; -- Collision on X, so vel.x becomes 0
+			v.vel[2] = v.vel[2] * (1/(1+v.friction*v2[6])); -- apply friction
+			v.vel[1] = -v.vel[1] * (v.bounciness+v2[7]); -- Collision on X, so vel.x becomes 0
 		else
 			chx = 0;
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened
-			if v.py*world.gravity[2] <0 then
-				v.vel[2] = 0; -- Collision ends on Y, so vel.y becomes 0
-			end
+			v.vel[2] = -v.vel[2] * (v.bounciness+v2[7]); -- Collision ends on Y, so vel.y becomes 0
+			v.vel[1] = v.vel[1] * (1/(1+v.friction*v2[6])); -- apply friction
 		end
 
 		v.pos[1] = v.pos[1] - chx;
@@ -68,30 +77,38 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		local depth2y = -dy - v2.h
 		local chx, chy = 0, 0;
 
-		if math.abs(depthx) < math.abs(depth2x) then
+		if math.abs(depthx) <= math.abs(depth2x) then
 			chx = -depthx;
 		else
 			chx = depth2x;
 		end
 
-		if math.abs(depthy) < math.abs(depth2y) then
+		if math.abs(depthy) <= math.abs(depth2y) then
 			chy = -depthy;
 		else
 			chy = depth2y;
 		end
 		
+		local friction_line_vector; -- vector representing the plane on which friction occurs.
+		-- ^ this vector MUST BE normal. In case of a rotational world, the reason for this becomes even more obvious.
 		if math.abs(chx) <= math.abs(chy) then
 			chy = 0;
+			friction_line_vector = vector:new(0,1);
 		else
 			chx = 0;
+			friction_line_vector = vector:new(1,0);
 		end
+		local DIFF_VEC_VEL = v2.vel - v.vel -- Velocity difference vector
+		local friction_vec_vel = friction_line_vector * (friction_line_vector*DIFF_VEC_VEL); -- Get the friction vector part of the difference vector
+		local non_friction_vec_vel = DIFF_VEC_VEL - friction_vec_vel;
+		local friction_product = v.friction * v2.friction -- Yes, I work with the product of the frictions of the two objects
+		
+		-- Precalculate some things :
+		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
 
-		local SUM_VEC_VEL = v.vel + v2.vel
-		local DISTANCE_VEC = v.pos - v2.pos
-		local vels_alpha = (SUM_VEC_VEL*DISTANCE_VEC)/vector.getlength(SUM_VEC_VEL)/vector.getlength(DISTANCE_VEC) -- the dot product of the 2
-
-		v.vel = v.vel + 0.5* vels_alpha * SUM_VEC_VEL * v2.m/v.m;
-		v2.vel = v2.vel - 0.5 * vels_alpha * SUM_VEC_VEL * v.m/v2.m;
+		-- Update the velocities
+		v.vel = v.vel + (v2.m/v.m) * 0.5 * ( Friction_add_vel + non_friction_vec_vel);
+		v2.vel = v2.vel - (v.m/v2.m) * 0.5 * ( Friction_add_vel + non_friction_vec_vel);
 
 		v.pos[1] = v.pos[1] - chx - v2.px;
 		v.pos[2] = v.pos[2] - chy -  v2.py;
@@ -109,6 +126,7 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 end
 
 function bodies:update(dt)
+	-- World collision MUST be BEFORE body woth body collision
 	for k=#self.bodies, 1, -1 do
 		local v = self.bodies[k]
 		v.px = 0 -- Direction of X movement (before collision)

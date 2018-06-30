@@ -25,9 +25,9 @@ local function sort_by_depth(a, b)
     return a[5] < b[5];
 end
 
-function world:add_block(x, y, w, h, depth)
+function world:add_block(x, y, w, h, friction, bounciness, depth)
     local index = #self.blocks+1
-    self.blocks[index] = setmetatable({x, y, w, h, depth or index}, self._blocks_mt);
+    self.blocks[index] = setmetatable({x, y, w, h, depth or index, friction or 1, bounciness or 0}, self._blocks_mt);
     table.sort(self, sort_by_depth);
     return index
 end

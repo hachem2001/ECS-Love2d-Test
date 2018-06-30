@@ -71,7 +71,11 @@ end
 
 local m = {x=1, y=2, z=3, w=4, r=1, g=2, b=3, a=4} -- basic ways of requesting an element from 
 function vector.__index(op1, ind)
-	return op1[m[ind]] or error("Attempt to get "..ind.." of vector, inexistant.");
+	return rawget(op1, m[ind]) or error("Attempt to reference element "..ind.." of vector, inexistant.");
+end
+
+function vector.__tostring(op1)
+	return "x:"..op1[1]..",y:"..op1[2];
 end
 
 function vector:new(...)

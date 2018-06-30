@@ -1,13 +1,11 @@
 --local player = ECS:raw_new_entity("base") -- Inheritence is no more a thing now.
 local player = {}
 
---player.position_id, player.position = ECS:new_component("position", 32, 32); -- position no longer needed
-player.body_id, player.body = ECS:new_component("body", 32, 32, 32, 32);
 local jdelay = 0.1;
 player.jump_delay = jdelay;
 function player:add(info) -- initializes the player
 	-- since there is only one player, this really simply replaces the current player
-	self.body.pos[1], self.body.pos[2], self.body.w, self.body.h = info.x or self.body[1] ,info.y or self.body[2],info.w or self.body[3], info.h or self.body[4];
+	player.body_id, player.body = ECS:new_component("body", info.x or 32, info.y or 32, info.w or 32, info.h or 32, info.m, info.friction, info.bounciness)
 end
 
 function player:destroy(player_ind) -- removes a player, or in our case, the player
@@ -22,8 +20,11 @@ end
 function player:draw()
 	love.graphics.setColor(1,1,1,1)
 	love.graphics.rectangle("fill", self.body.pos[1], self.body.pos[2], self.body.w, self.body.h)
+	camera:unset()
+	love.graphics.print("Position : "..tostring(self.body.pos).."\nVelocity : "..tostring(self.body.vel), 50, 50);
+	camera:set()
 
-	camera:set_position(self.body.pos[1], self.body.pos[2]);
+	--camera:set_position(self.body.pos[1], self.body.pos[2]); -- moved to main - update(dt)
 end
 
 function player:is_on_ground()
@@ -37,11 +38,11 @@ function player:update(dt) -- In the future, I might seperate the update functio
 	-- Pre physics update.
 	self.jump_delay = self.jump_delay - dt;
 	if love.keyboard.isDown("right") then
-		self.body.vel[1] = 100;
+		self.body.vel[1] = self.body.vel[1]+100*dt;
 	elseif love.keyboard.isDown("left") then
-		self.body.vel[1] = -100;
+		self.body.vel[1] = self.body.vel[1]-100*dt;
 	else
-		self.body.vel[1] = 0;
+		--self.body.vel[1] = 0;
 	end
 
 	if love.keyboard.isDown("up") and self:is_on_ground() and self.jump_delay<0 then
@@ -53,7 +54,7 @@ end
 function player:mousepressed(x, y, button)
 	--ECS:queue_entity_destroy("player", 1) -- any index really, because one player is used
 	local wx, wy = camera:get_world_coordinates(x, y);
-	world:add_block(wx, wy, 32, 32);
+	world:add_block(wx, wy, 32, 32, 0.2, 0);
 end
 
 

@@ -91,12 +91,15 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		
 		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		-- ^ this vector MUST BE normal. In case of a rotational world, the reason for this becomes even more obvious.
+		local bounce_vector;
 		if math.abs(chx) <= math.abs(chy) then
 			chy = 0;
 			friction_line_vector = vector:new(0,1);
+			bounce_vector = vector:new(v2.vel[1]-v.vel[1],0)*(v.bounciness+v2.bounciness);
 		else
 			chx = 0;
 			friction_line_vector = vector:new(1,0);
+			bounce_vector = vector:new(0,v2.vel[2]-v.vel[2])*(v.bounciness+v2.bounciness);
 		end
 		local DIFF_VEC_VEL = v2.vel - v.vel -- Velocity difference vector
 		local friction_vec_vel = friction_line_vector * (friction_line_vector*DIFF_VEC_VEL); -- Get the friction vector part of the difference vector
@@ -105,15 +108,16 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		
 		-- Precalculate some things :
 		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
-
+		local sum = Friction_add_vel + non_friction_vec_vel + bounce_vector;
 		-- Update the velocities
-		v.vel = v.vel + (v2.m/v.m) * 0.5 * ( Friction_add_vel + non_friction_vec_vel);
-		v2.vel = v2.vel - (v.m/v2.m) * 0.5 * ( Friction_add_vel + non_friction_vec_vel);
+		print(bounce_vector, sum);
+		v.vel = v.vel + (v2.m/(v.m+v2.m)) * sum;
+		v2.vel = v2.vel - (v.m/(v2.m+v.m)) * sum;
 
-		v.pos[1] = v.pos[1] - chx - v2.px;
-		v.pos[2] = v.pos[2] - chy -  v2.py;
-		v2.pos[1] = v2.pos[1] + chx + v.px;
-		v2.pos[2] = v2.pos[2] + chy + v.py;
+		v.pos[1] = v.pos[1] - chx --- v2.px;
+		v.pos[2] = v.pos[2] - chy --- v2.py;
+		v2.pos[1] = v2.pos[1] + chx --+ v.px;
+		v2.pos[2] = v2.pos[2] + chy --+ v.py;
 
 		if chx == 0 then
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened
@@ -132,7 +136,6 @@ function bodies:update(dt)
 		v.px = 0 -- Direction of X movement (before collision)
 		v.py = 0 -- Direction of Y movement (before collision)
 		v.vel = v.vel + world.gravity*dt
-		v.pos = v.pos + v.vel*dt
 		for k2,v2 in pairs(world.blocks) do
 			collide_world(v, v2)
 		end
@@ -143,6 +146,10 @@ function bodies:update(dt)
 			local v2 = self.bodies[k2]
 			collide_obj(v, v2)
 		end
+	end
+	for k=#self.bodies, 1, -1 do
+		local v = self.bodies[k];
+		v.pos = v.pos + v.vel*dt
 	end
 end
 

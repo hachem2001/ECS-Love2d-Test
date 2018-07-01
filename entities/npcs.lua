@@ -3,7 +3,7 @@ npcs.npcs = {}
 
 function npcs:add(info) -- adds the NPCS
 	local m = {}
-	m.body_id, m.body = ECS:new_component("body", info.x or 32, info.y or 32, info.w or 32, info.h or 32);
+	m.body_id, m.body = ECS:new_component("body", info.x or 32, info.y or 32, info.w or 32, info.h or 32, info.m, info.friction, info.bounciness)
 	self.npcs[#self.npcs+1] = m;
 end
 

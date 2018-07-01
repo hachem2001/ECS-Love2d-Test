@@ -3,6 +3,7 @@ local player = {}
 
 local jdelay = 0.1;
 player.jump_delay = jdelay;
+player.speed = 200;
 function player:add(info) -- initializes the player
 	-- since there is only one player, this really simply replaces the current player
 	player.body_id, player.body = ECS:new_component("body", info.x or 32, info.y or 32, info.w or 32, info.h or 32, info.m, info.friction, info.bounciness)
@@ -38,9 +39,13 @@ function player:update(dt) -- In the future, I might seperate the update functio
 	-- Pre physics update.
 	self.jump_delay = self.jump_delay - dt;
 	if love.keyboard.isDown("right") then
-		self.body.vel[1] = self.body.vel[1]+100*dt;
+		if self.body.vel[1] < self.speed then
+			self.body.vel[1] = self.body.vel[1]+self.speed*dt;
+		end
 	elseif love.keyboard.isDown("left") then
-		self.body.vel[1] = self.body.vel[1]-100*dt;
+		if self.body.vel[1] >-self.speed then
+			self.body.vel[1] = self.body.vel[1]-self.speed*dt;
+		end
 	else
 		--self.body.vel[1] = 0;
 	end

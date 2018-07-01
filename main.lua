@@ -29,13 +29,13 @@ function love.load()
 	world:add_block(0, 16, 32, 32, 0.2, 0);
 	world:add_block(32, 32, 32, 32, 0.2, 0);
 	world:add_block(64, 32, 32, 32, 0.2, 0);
-	world:add_block(96, 32, 2506, 32, 0.2, 0);
-	world:add_block(2548, 16, 32, 32, 0.2, 0);
+	world:add_block(96, 32, 1024, 32, 0.2, 0);
+	world:add_block(1024, 16, 32, 32, 0.2, 0);
 
 	-- Add a player
 
-	ECS:new_entity("player", {x=32, y=0, w=32, h=32, friction=0.2, bounciness=0.2})
-	ECS:new_entity("npcs", {x=65, y=-200, w=256, h=32, friction=0.2, bounciness=0.2})
+	ECS:new_entity("player", {x=32, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=65, y=-200, w=256, h=32, friction=0.2, bounciness=0.1})
 
 	-- Testing
 	-- local v = vector:new(1,2)^1;
@@ -44,6 +44,7 @@ function love.load()
 	-- print(v*v2);
 	-- print(v, v2, v3);
 	-- print(vector.getlength(v3));
+	camera:set_scale(0.5,0.5)
 end
 
 --

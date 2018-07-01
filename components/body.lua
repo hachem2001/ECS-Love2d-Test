@@ -136,6 +136,7 @@ function bodies:update(dt)
 		v.px = 0 -- Direction of X movement (before collision)
 		v.py = 0 -- Direction of Y movement (before collision)
 		v.vel = v.vel + world.gravity*dt
+		v.pos = v.pos + v.vel*dt
 		for k2,v2 in pairs(world.blocks) do
 			collide_world(v, v2)
 		end
@@ -146,10 +147,6 @@ function bodies:update(dt)
 			local v2 = self.bodies[k2]
 			collide_obj(v, v2)
 		end
-	end
-	for k=#self.bodies, 1, -1 do
-		local v = self.bodies[k];
-		v.pos = v.pos + v.vel*dt
 	end
 end
 

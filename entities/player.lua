@@ -40,18 +40,18 @@ function player:update(dt) -- In the future, I might seperate the update functio
 	self.jump_delay = self.jump_delay - dt;
 	if love.keyboard.isDown("right") then
 		if self.body.vel[1] < self.speed then
-			self.body.vel[1] = self.body.vel[1]+self.speed*dt;
+			self.body.vel[1] = self.body.vel[1]+self.speed*dt*3;
 		end
 	elseif love.keyboard.isDown("left") then
 		if self.body.vel[1] >-self.speed then
-			self.body.vel[1] = self.body.vel[1]-self.speed*dt;
+			self.body.vel[1] = self.body.vel[1]-self.speed*dt*3;
 		end
 	else
 		--self.body.vel[1] = 0;
 	end
 
 	if love.keyboard.isDown("up") and self:is_on_ground() and self.jump_delay<0 then
-		self.body.vel[2] = self.body.vel[2]-world:to_pixels(9.1); -- Relative jump.
+		self.body.vel[2] = self.body.vel[2] - world:to_pixels(9.1); -- Relative jump.
 		self.jump_delay = jdelay;
 	end
 end

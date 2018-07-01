@@ -4,13 +4,14 @@
 local camera = {}
 camera.x = 0;
 camera.y = 0;
-camera.scale = 1;
+camera.scalex = 1;
+camera.scaley = 1;
 camera.shearx = 0;
 camera.sheary = 0;
 camera.angle = 0;
 camera.ox, camera.oy = -width/2, -height/2;
 
-camera.transform = love.math.newTransform(camera.x, camera.y, camera.angle,camera.scale, camera.scale,camera.ox, camera.oy, camera.shearx, camera.sheary);
+camera.transform = love.math.newTransform(camera.x, camera.y, camera.angle,camera.scalex, camera.scaley, camera.ox, camera.oy, camera.shearx, camera.sheary);
 camera.inv_transform = camera.transform:inverse();
 
 camera.needs_update = false;
@@ -41,11 +42,24 @@ function camera:get_position()
 	return camera.x, camera.y;
 end
 
+function camera:set_scale(sx, sy)
+	if not (camera.scalex == sx and camera.scaley == sy) then
+		camera.scalex = sx;
+		camera.scaley = sy;
+		camera.needs_update = true;
+	end
+end
+
+function camera:get_scale()
+	return camera.scalex, camera.scaley;
+end
+
 function camera:set_origin(x, y)
-	camera.ox = x;
-	camera.oy = y;
-	camera.needs_update = true;
-	camera.needs_update = true;
+	if not (camera.ox == x and camera.oy == y) then
+		camera.ox = x;
+		camera.oy = y;
+		camera.needs_update = true;
+	end
 end
 
 function camera:get_origin()
@@ -69,7 +83,8 @@ end
 function camera:update(dt)
 	-- Small fix commit
 	if camera.needs_update then
-		camera.transform = camera.transform:setTransformation(camera.x, camera.y, camera.angle, camera.scale, camera.scale, camera.ox, camera.oy, camera.shearx, camera.sheary);
+		camera.transform = camera.transform:setTransformation(0, 0, camera.angle, 1, 1, camera.ox, camera.oy, camera.shearx, camera.sheary);
+		camera.transform = camera.transform:scale(camera.scalex, camera.scaley):translate(camera.x, camera.y);
 		camera.inv_transform = camera.transform:inverse();
 		camera.needs_update = false;
 	end
@@ -82,4 +97,5 @@ end
 function camera:get_screen_coordinates(x, y)
 	return self.transform:transformPoint(x, y)
 end
+
 return camera;

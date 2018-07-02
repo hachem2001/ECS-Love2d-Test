@@ -11,7 +11,8 @@ ECS._components_path	= "components/"
 
 ECS._entity_names = {
 	player = "player.lua",
-	npcs = "npcs.lua"
+	npcs = "npcs.lua",
+	bullets = "bullets.lua",
 }
 
 ECS._component_names = {
@@ -47,8 +48,11 @@ end
 local function sort_by_layer(a, b)
 	return a.layer < b.player
 end
-
-function ECS:new_entity(type, info)
+--
+-- REMARK : ENTITY WORKS IS SUPPLIED WITH AN INFO TABLE
+-- COMPONENTS ARE SUPPLIED THE ... WAY.
+--
+function ECS:new_entity(type, info) 
 	-- Due to the change on how entities work, there is really no direct way to set up
 	-- which entity to draw before the other
 	-- Should basically return 
@@ -61,10 +65,20 @@ function ECS:new_component(type, ...) -- returns the ID of the component as well
 end
 
 function ECS:queue_entity_destroy(type, id) -- This can be called from a component such as health to indicate that entity has no more health
+	for i,v in ipairs(self.entities_to_destroy) do
+		if v[1] == type and v[2] == id then
+			return; -- if already pushed to be deleted, why delete it twice? Just return
+		end
+	end
 	self.entities_to_destroy[#self.entities_to_destroy+1] = {type=type, id=id}
 end
 
 function ECS:queue_component_destroy(type, id) -- This is called to destroy a component
+	for i,v in ipairs(self.components_to_destroy) do
+		if v[1] == type and v[2] == id then
+			return; -- if already pushed to be deleted, why delete it twice? Just return
+		end
+	end
 	self.components_to_destroy[#self.components_to_destroy+1] = {type=type, id=id}
 end
 
@@ -98,6 +112,7 @@ function ECS:update(dt)
 	end
 	for k=#self.entities_to_destroy, 1, -1 do
 		local v = self.entities_to_destroy[k];
+		print("DESTROYING "..v.id.." "..v.type)
 		self.entities[v.type]:destroy(v.id);
 		table.remove(self.entities_to_destroy, k);
 	end

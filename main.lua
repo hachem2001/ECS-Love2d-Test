@@ -11,6 +11,7 @@ function love.load()
 	mousex,mousey	= love.mouse.getPosition()		-- Get the position of the mouse
 
 	--> Get APIS
+	colorutils	= require "apis/colorutils"				-- Color library, really useful.
 	vector		= require "apis/vector"					-- Vector library needed
 	--< End Get APIS
 	
@@ -44,7 +45,7 @@ function love.load()
 	-- print(v*v2);
 	-- print(v, v2, v3);
 	-- print(vector.getlength(v3));
-	camera:set_scale(0.5,0.5)
+	--camera:set_scale(0.5,0.5)
 end
 
 --
@@ -69,11 +70,11 @@ function love.update(dt)
 end
 
 function love.keypressed(const, scancode, isrepeat)
-
+	ECS:keypressed(const, scancode, isrepeat);
 end
 
 function love.keyreleased(const, scancode, isrepeat)
-
+	ECS:keyreleased(const, scancode, isrepeat);
 end
 
 function love.mousepressed(x, y, button, istouch)
@@ -81,7 +82,7 @@ function love.mousepressed(x, y, button, istouch)
 end
 
 function love.mousereleased(x, y, button, istouch)
-
+	ECS:mousereleased(x,y,button, istouch)
 end
 
 function love.textinput( text )

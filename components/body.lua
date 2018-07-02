@@ -3,7 +3,7 @@ bodies.bodies = {};
 
 local materials = {plastic = 1, gold = 2.8, iron=7.3} -- Perhaps I'll use this at a later stage
 
-function bodies:add(x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
+function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
 	local m = {pos=vector:new(x, y),
 			w = w or 1, h = h or 1,
 			vel=vector:new(0,0),
@@ -11,11 +11,21 @@ function bodies:add(x, y, w, h, m, friction, bounciness) -- adds a rectangle (m 
 			m = m or w*h,
 			friction = friction or 1,
 			bounciness = bounciness or 0,
+			holder = {name = entity_name, id = entity_id}, -- the entity that is holding this
+			last_collided_with = {}, -- contains the last_entites that were collided with : { {entitytype, id}, {enttype, id}, ...}
+			-- if collision happened with the world, it would be {"world", block_id}
+			gravity_effect = 1,
+			categories_to_avoid = {}, -- Avoid collision with bodies whose holder name is of such category. "world" is used for the.
+			ids_to_avoid = {}, -- Avoid collision with certain ids
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
 	local index = #self.bodies+1;
 	self.bodies[index] = m;
 	return index, m;
+end
+
+function bodies:avoid_category(id, category_to_avoid)
+	self.bodies[id].categories_to_avoid[category_to_avoid] = true
 end
 
 function bodies:destroy(id) -- returns a pos by id. This is okay to do, but a very more
@@ -61,8 +71,10 @@ local function collide_world(obj, world_block) -- if bounce is needed, it can be
 
 		v.pos[1] = v.pos[1] - chx;
 		v.pos[2] = v.pos[2] - chy;
-		
+
+		return true;
 	end
+	return false;
 end
 
 local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects are pushed and the velocity vectors
@@ -110,14 +122,13 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
 		local sum = Friction_add_vel + non_friction_vec_vel + bounce_vector;
 		-- Update the velocities
-		print(bounce_vector, sum);
 		v.vel = v.vel + (v2.m/(v.m+v2.m)) * sum;
 		v2.vel = v2.vel - (v.m/(v2.m+v.m)) * sum;
 
-		v.pos[1] = v.pos[1] - chx --- v2.px;
-		v.pos[2] = v.pos[2] - chy --- v2.py;
-		v2.pos[1] = v2.pos[1] + chx --+ v.px;
-		v2.pos[2] = v2.pos[2] + chy --+ v.py;
+		v.pos[1] = v.pos[1] - chx
+		v.pos[2] = v.pos[2] - chy
+		v2.pos[1] = v2.pos[1] + chx
+		v2.pos[2] = v2.pos[2] + chy
 
 		if chx == 0 then
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened
@@ -126,7 +137,10 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 			v.px = v.px-chx; -- Reverse this to indicate that a push on X on the opposite direction happened
 			v2.px = v2.px+chx; -- Same for the other object
 		end
+
+		return true;
 	end
+	return false
 end
 
 function bodies:update(dt)
@@ -135,17 +149,26 @@ function bodies:update(dt)
 		local v = self.bodies[k]
 		v.px = 0 -- Direction of X movement (before collision)
 		v.py = 0 -- Direction of Y movement (before collision)
-		v.vel = v.vel + world.gravity*dt
+		v.vel = v.vel + world.gravity*v.gravity_effect*dt
 		v.pos = v.pos + v.vel*dt
+		v.last_collided_with = {};
 		for k2,v2 in pairs(world.blocks) do
-			collide_world(v, v2)
+			local coll = collide_world(v, v2)
+			if coll then
+				v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
+			end
 		end
+
 	end
 	for k=#self.bodies, 1, -1 do
 		local v = self.bodies[k]
 		for k2 = k-1, 1, -1 do
 			local v2 = self.bodies[k2]
-			collide_obj(v, v2)
+			local coll = collide_obj(v, v2)
+			if coll then
+				v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};
+				v2.last_collided_with[#v2.last_collided_with+1] = {v.holder.name, v.holder.id};
+			end
 		end
 	end
 end

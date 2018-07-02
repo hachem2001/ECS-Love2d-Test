@@ -1,6 +1,7 @@
 local world = {}
 local VV = {x=1,y=2,w=3,h=4,depth=5,[1]=1,[2]=2,[3]=3,[4]=4,[5]=5}
 world.blocks = {}
+world.collisions = {} -- Records all of the collisions that happened the last update
 world._blocks_mt = {
     __index = function(a, index)
         return rawget(a, VV[index]);
@@ -40,8 +41,17 @@ function world:draw()
     end
 end
 
-function world:update(dt)
+function world:push_collision(entity_type, id)
+    self.collisions[#self.collisions+1] = {entity_type, id};
+end
 
+function world:update(dt)
+    -- handle the previous collisions then delete them.
+    for k,v in pairs(self.collisions) do
+        -- Do stuff
+        
+    end
+    self.collisions = {};
 end
 
 return world;

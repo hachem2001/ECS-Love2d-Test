@@ -17,6 +17,7 @@ function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness)
 			gravity_effect = 1,
 			categories_to_avoid = {}, -- Avoid collision with bodies whose holder name is of such category. "world" is used for the.
 			ids_to_avoid = {}, -- Avoid collision with certain ids
+			collide_with_entities = true, -- can be set to false to make it only collide with the world
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
 	local index = #self.bodies+1;
@@ -25,7 +26,15 @@ function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness)
 end
 
 function bodies:avoid_category(id, category_to_avoid)
+	-- id : id of the body
+	-- category_to_avoid : entity type / holder name for the body to avoid
 	self.bodies[id].categories_to_avoid[category_to_avoid] = true
+end
+
+function bodies:avoid_id(id, id2)
+	-- id : id of the body
+	-- id2 : id of the body to avoid
+	self.bodies[id].ids_to_avoid[id2] = true
 end
 
 function bodies:destroy(id) -- returns a pos by id. This is okay to do, but a very more
@@ -152,22 +161,27 @@ function bodies:update(dt)
 		v.vel = v.vel + world.gravity*v.gravity_effect*dt
 		v.pos = v.pos + v.vel*dt
 		v.last_collided_with = {};
-		for k2,v2 in pairs(world.blocks) do
-			local coll = collide_world(v, v2)
-			if coll then
-				v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
+		if not v.categories_to_avoid["world"] then -- If the collision with the world is not disabled
+			for k2,v2 in pairs(world.blocks) do
+				local coll = collide_world(v, v2)
+				if coll then
+					v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
+				end
 			end
 		end
-
 	end
 	for k=#self.bodies, 1, -1 do
 		local v = self.bodies[k]
-		for k2 = k-1, 1, -1 do
-			local v2 = self.bodies[k2]
-			local coll = collide_obj(v, v2)
-			if coll then
-				v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};
-				v2.last_collided_with[#v2.last_collided_with+1] = {v.holder.name, v.holder.id};
+		if v.collide_with_entities then
+			for k2 = k-1, 1, -1 do
+				local v2 = self.bodies[k2]
+				if not v.ids_to_avoid[k2] and not v2.ids_to_avoid[k] then -- if the collision with the body k2 and k is not disabled by one of them
+					local coll = collide_obj(v, v2)
+					if coll then
+						v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};
+						v2.last_collided_with[#v2.last_collided_with+1] = {v.holder.name, v.holder.id};
+					end
+				end
 			end
 		end
 	end

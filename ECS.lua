@@ -112,7 +112,7 @@ function ECS:update(dt)
 	end
 	for k=#self.entities_to_destroy, 1, -1 do
 		local v = self.entities_to_destroy[k];
-		print("DESTROYING "..v.id.." "..v.type)
+		print("DESTROYING "..v.type.." number "..k);
 		self.entities[v.type]:destroy(v.id);
 		table.remove(self.entities_to_destroy, k);
 	end

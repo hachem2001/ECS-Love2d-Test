@@ -66,9 +66,9 @@ function player:mousepressed(x, y, button)
 	--ECS:queue_entity_destroy("player", 1) -- any index really, because one player is used
 	local wx, wy = camera:get_world_coordinates(x, y);
 
-	local dir = vector:new(wx-self.body.pos[1], wy-self.body.pos[2])
+	local dir = vector:new(wx-self.body.pos[1]-self.body.w/2, wy-self.body.pos[2]-self.body.h/2)
 	if button == 1 then	
-		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=vector:new(self.body.pos[1],self.body.pos[2]), direction=dir })
+		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=vector:new(self.body.pos[1]+self.body.w/2,self.body.pos[2]+self.body.h/2), direction=dir })
 	elseif button == 2 then
 		world:add_block(wx, wy, 32, 32, 7, 0);
 	end

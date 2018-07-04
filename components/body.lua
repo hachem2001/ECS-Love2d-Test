@@ -2,6 +2,7 @@ local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
 bodies.bodies = {};
 
 local materials = {plastic = 1, gold = 2.8, iron=7.3} -- Perhaps I'll use this at a later stage
+local global_id = 1
 
 function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
 	local m = {pos=vector:new(x, y),
@@ -20,9 +21,9 @@ function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness)
 			collide_with_entities = true, -- can be set to false to make it only collide with the world
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
-	local index = #self.bodies+1;
-	self.bodies[index] = m;
-	return index, m;
+	self.bodies[global_id] = m;
+	global_id = global_id + 1;
+	return global_id-1, m;
 end
 
 function bodies:avoid_category(id, category_to_avoid)
@@ -38,8 +39,8 @@ function bodies:avoid_id(id, id2)
 end
 
 function bodies:destroy(id) -- returns a pos by id. This is okay to do, but a very more
-	-- efficient way of doing this is by indexing the position 
-	table.remove(self.bodies, id);
+	-- efficient way of doing this is by indexing the position
+	self.bodies[id] = nil;
 end
 
 local function collide_world(obj, world_block) -- if bounce is needed, it can be specified and used to reverse the obj's velocity
@@ -154,28 +155,30 @@ end
 
 function bodies:update(dt)
 	-- World collision MUST be BEFORE body woth body collision
-	for k=#self.bodies, 1, -1 do
+	for k=global_id-1, 1, -1 do
 		local v = self.bodies[k]
-		v.px = 0 -- Direction of X movement (before collision)
-		v.py = 0 -- Direction of Y movement (before collision)
-		v.vel = v.vel + world.gravity*v.gravity_effect*dt
-		v.pos = v.pos + v.vel*dt
-		v.last_collided_with = {};
-		if not v.categories_to_avoid["world"] then -- If the collision with the world is not disabled
-			for k2,v2 in pairs(world.blocks) do
-				local coll = collide_world(v, v2)
-				if coll then
-					v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
+		if v then
+			v.px = 0 -- Direction of X movement (before collision)
+			v.py = 0 -- Direction of Y movement (before collision)
+			v.vel = v.vel + world.gravity*v.gravity_effect*dt
+			v.pos = v.pos + v.vel*dt
+			v.last_collided_with = {};
+			if not v.categories_to_avoid["world"] then -- If the collision with the world is not disabled
+				for k2,v2 in pairs(world.blocks) do
+					local coll = collide_world(v, v2)
+					if coll then
+						v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
+					end
 				end
 			end
 		end
 	end
-	for k=#self.bodies, 1, -1 do
+	for k=global_id-1, 1, -1 do
 		local v = self.bodies[k]
-		if v.collide_with_entities then
+		if v and v.collide_with_entities then
 			for k2 = k-1, 1, -1 do
 				local v2 = self.bodies[k2]
-				if not v.ids_to_avoid[k2] and not v2.ids_to_avoid[k] then -- if the collision with the body k2 and k is not disabled by one of them
+				if v2 and not v.ids_to_avoid[k2] and not v2.ids_to_avoid[k] and not v.categories_to_avoid[v2.holder.name] and not v2.categories_to_avoid[v.holder.name] then -- if the collision with the body k2 and k is not disabled by one of them
 					local coll = collide_obj(v, v2)
 					if coll then
 						v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};

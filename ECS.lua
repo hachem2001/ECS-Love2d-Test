@@ -110,6 +110,7 @@ function ECS:update(dt)
 			v:update(dt)
 		end
 	end
+	
 	for k=#self.entities_to_destroy, 1, -1 do
 		local v = self.entities_to_destroy[k];
 		print("DESTROYING "..v.type.." number "..k);
@@ -121,6 +122,7 @@ function ECS:update(dt)
 		self.components[v.type]:destroy(v.id);
 		table.remove(self.components_to_destroy, k);
 	end
+	
 end
 
 function ECS:keypressed(const, scancode, isrepeat)

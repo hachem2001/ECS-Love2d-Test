@@ -12,8 +12,7 @@ info.friction, info.bounciness)
 end
 
 function player:destroy(player_ind) -- removes a player, or in our case, the player
-	--ECS:queue_component_destroy("position", player.position_id);--position no longer needed
-	--ECS:queue_component_destroy("body", player.body_id);
+	ECS:queue_component_destroy("body", player.body_id);
 end
 
 --

@@ -1,0 +1,4 @@
+○   It's possible to draw the world on a canvas then simply reuse that canvas for efficiency reasons
+	however I'm not trying this at the moment because I'm not sure how the world would behave. If things change
+	way too quickly in it perhaps it's useless. However it is a very good idea.
+○	I need to add a game manager for this

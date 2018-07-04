@@ -28,7 +28,7 @@ end
 
 function world:add_block(x, y, w, h, friction, bounciness, depth)
     local index = #self.blocks+1
-    self.blocks[index] = setmetatable({x, y, w, h, depth or index, friction or 1, bounciness or 0}, self._blocks_mt);
+    self.blocks[index] = setmetatable({x+w/2, y+h/2, w, h, depth or index, friction or 1, bounciness or 0}, self._blocks_mt);
     table.sort(self, sort_by_depth);
     return index
 end
@@ -37,7 +37,7 @@ function world:draw()
     love.graphics.setColor(0.7,0.8,0.5,1);
     for k = 1, #self.blocks do
         local v = self.blocks[k];
-        love.graphics.rectangle("fill", v[1], v[2], v[3], v[4]);
+        love.graphics.rectangle("fill", v[1]-v[3]/2, v[2]-v[4]/2, v[3], v[4]);
     end
 end
 

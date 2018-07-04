@@ -45,8 +45,8 @@ end
 
 local function collide_world(obj, world_block) -- if bounce is needed, it can be specified and used to reverse the obj's velocity
 	local v, v2 = obj, world_block
-	local dx = v2[1] - v.pos[1]
-	local dy = v2[2] - v.pos[2]
+	local dx = v2[1]-v2[3]/2 - v.pos[1] + v.w/2
+	local dy = v2[2]-v2[4]/2 - v.pos[2] + v.h/2
 	if dx<v.w and dx>-v2.w and dy<v.h and dy>-v2.h then
 		local depthx = dx - v.w
 		local depthy = dy - v.h
@@ -90,8 +90,8 @@ end
 local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects are pushed and the velocity vectors
 	-- of the two are tweaked such that some part of each gets added to the other's
 	local v, v2 = obj1, obj2
-	local dx = v2.pos[1] - v.pos[1]
-	local dy = v2.pos[2] - v.pos[2]
+	local dx = v2.pos[1]-v2.w/2 - v.pos[1]+v.w/2;
+	local dy = v2.pos[2]-v2.h/2 - v.pos[2]+v.h/2;
 	if dx<v.w and dx>-v2.w and dy<v.h and dy>-v2.h then
 		local depthx = dx - v.w
 		local depthy = dy - v.h

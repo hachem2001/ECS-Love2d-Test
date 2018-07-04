@@ -13,6 +13,7 @@ ECS._entity_names = {
 	player = "player.lua",
 	npcs = "npcs.lua",
 	bullets = "bullets.lua",
+	pushpellets = "pushpellets.lua",
 }
 
 ECS._component_names = {

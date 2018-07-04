@@ -22,14 +22,14 @@ end
 --> Events
 --
 
-local DELAY = 0.5;
+local DELAY = 0.05;
 local delay = DELAY;
 function npcs:update(dt)
 	delay = delay - dt;
 	if delay < 0 then
 		local player = ECS.entities["player"]
 		for k,v in pairs(self.npcs) do
-			ECS:new_entity("bullets", {pos = vector:new(v.body.pos[1], v.body.pos[2]),
+			ECS:new_entity("pushpellets", {pos = vector:new(v.body.pos[1], v.body.pos[2]),
 							direction=vector:new(player.body.pos[1] - v.body.pos[1], player.body.pos[2]- v.body.pos[2]),
 							name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true})
 		end

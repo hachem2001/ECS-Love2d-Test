@@ -36,9 +36,9 @@ function love.load()
 	-- Add a player
 
 	ECS:new_entity("player", {x=32, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=64, y=-200, w=32, h=32, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=160, y=-200, w=32, h=32, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=224, y=-200, w=32, h=32, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=64, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=80, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=96, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
 
 	-- Testing
 	-- local v = vector:new(1,2)^1;

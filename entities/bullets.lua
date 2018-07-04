@@ -2,9 +2,10 @@ local bullets = {}
 bullets.bullets = {}
 
 local bulletcolor = colorutils:neww(210, 0, 0, 255)
-local bulletspeed = 100
-
+local bulletspeed = 100;
+local bullet_life_time = 5;
 local global_id = 1;
+
 function bullets:add(info)
     -- requires :
     -- info.pos (vector) for start position
@@ -15,7 +16,14 @@ function bullets:add(info)
     -- info.self_hit_allowed
     -- info.avoid_type
     local body_id, body = ECS:new_component("body", "bullets", index, info.pos[1] or 0, info.pos[2] or 0, info.w or 3, info.h or 3)
-    local m = {body_id=body_id, body=body, holder={name=info.name or error("info.name must be given",2), id=info.id or error("ID of the entity of type "..info.name.."not given", 2)}}
+    local m = {body_id=body_id,
+        body=body,
+        holder={
+            name=info.name or error("info.name must be given",2),
+            id=info.id or error("ID of the entity of type "..info.name.."not given", 2)
+        },
+        time_left = bullet_life_time,
+        }
     if not info.self_hit_allowed and not info.giver_body_id then
         error("Entity spawning bullet did not give it's body id (info.giver_body_id)", 2);
     elseif not info.self_hit_allowed then
@@ -51,6 +59,8 @@ end
 function bullets:update(dt)
     local to_delete = {}
     for k,v in pairs(self.bullets) do
+        v.time_left = v.time_left - dt;
+
         for k2,v2 in pairs(v.body.last_collided_with) do
             if (v2[1]~="world" and not (v.holder.name == v2[1] and v.holder.id==v2[2])) then
                 ECS:queue_entity_destroy(v2[1], v2[2]);
@@ -58,6 +68,10 @@ function bullets:update(dt)
             elseif (v2[1]=='world') then
                 to_delete[k] = true;
             end
+        end
+
+        if v.time_left <= 0 then
+            to_delete[k] = true;
         end
     end
     for k,v in pairs(to_delete) do

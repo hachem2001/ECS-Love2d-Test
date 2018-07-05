@@ -20,7 +20,7 @@ function world:to_pixels(meters)
 end
 
 world.meter = 32 -- 32 pixels is how much considered a meter
-world.gravity = vector:new(0, world:to_pixels(9.1));
+world.gravity = vector(0, world:to_pixels(9.1));
 
 local function sort_by_depth(a, b)
     return a[5] < b[5];

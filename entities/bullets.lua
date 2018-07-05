@@ -51,8 +51,9 @@ end
 
 function bullets:draw()
     for k,v in pairs(self.bullets) do
-        love.graphics.setColor(bulletcolor)
-        love.graphics.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
+        love.graphics.setColor(bulletcolor);
+        sdraw.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
+        --love.graphics.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
     end
 end
 

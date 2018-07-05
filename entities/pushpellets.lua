@@ -17,7 +17,7 @@ function pushpellets:add(info)
     -- info.avoid_type
     local w,h = info.w or 0, info.h or 0
     local body_id, body = ECS:new_component(
-        "body", "pushpellets", index, info.pos[1] or 0, info.pos[2] or 0, w, h,
+        "body", "pushpellets", index, info.pos.x or 0, info.pos.y or 0, w, h,
         50)
     local m = {body_id=body_id,
         body=body,
@@ -38,7 +38,7 @@ function pushpellets:add(info)
     end
 
     m.body.gravity_effect = 0.01;
-    m.body.vel = (info.direction or error('info.direction vector no given', 2))/(vector.getlength(info.direction)) * pushpelletspeed; -- length = 1
+    m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed; -- length = 1
     self.pushpellets[global_id] = m;
     global_id = global_id + 1;
 
@@ -55,7 +55,8 @@ end
 function pushpellets:draw()
     for k,v in pairs(self.pushpellets) do
         love.graphics.setColor(pushpelletcolor)
-        love.graphics.rectangle("fill", v.body.pos[1]-2, v.body.pos[2]-2, v.body.w+2, v.body.h+2);
+        sdraw.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2)
+        --love.graphics.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2);
     end
 end
 

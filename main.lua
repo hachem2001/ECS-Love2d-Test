@@ -13,10 +13,11 @@ function love.load()
 	--> Get APIS
 	colorutils	= require "apis/colorutils"				-- Color library, really useful.
 	vector		= require "apis/vector"					-- Vector library needed
+
 	--< End Get APIS
-	
 	--> Get SYSTEMS
 	camera 		= require "camera"					-- The camera library
+	sdraw		= require "smart_draw"
 	ECS			= require "ECS"						-- Entity Component System
 	world		= require "world"					-- World 
 	--< End Get SYSTEMS
@@ -41,8 +42,8 @@ function love.load()
 	ECS:new_entity("npcs", {x=96, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
 
 	-- Testing
-	-- local v = vector:new(1,2)^1;
-	-- local v2 = vector:new(1, 1);
+	-- local v = vector(1,2)^1;
+	-- local v2 = vector(1, 1);
 	-- local v3 = v*(v*v2)
 	-- print(v*v2);
 	-- print(v, v2, v3);
@@ -67,7 +68,7 @@ function love.update(dt)
 	mousex,mousey	= love.mouse.getPosition()				-- Update the position of the mouse ( in any circumstances )
 	ECS:update(dt);
 
-	camera:set_position(ECS.entities["player"].body.pos[1], ECS.entities["player"].body.pos[2])
+	camera:set_position(ECS.entities["player"].body.pos.x, ECS.entities["player"].body.pos.y)
 	camera:update(dt);
 end
 

@@ -2,6 +2,11 @@
 -- GLOBAL (width) and (height) VARIABLES ARE SET UP IN THE LOVE.LOAD FUNCTION (CONTAINING THE CAMERA COORDINATES)
 -- INCASE OF SCREEN SIZE RECHANGE, (camera.needs_update) NEEDS TO CHANGE TO TRUE.
 local camera = {}
+
+camera.w, camera.h = love.graphics.getDimensions();
+camera.diagonal_squared = (camera.w^2 + camera.h^2)
+camera.diagonal = camera.diagonal_squared^0.5
+
 camera.x = 0;
 camera.y = 0;
 camera.scalex = 1;

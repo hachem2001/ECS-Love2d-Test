@@ -22,7 +22,7 @@ end
 --> Events
 --
 
-local DELAY = 0.05;
+local DELAY = 0.5;
 local delay = DELAY;
 function npcs:update(dt)
 	delay = delay - dt;

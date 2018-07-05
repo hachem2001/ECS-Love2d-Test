@@ -28,18 +28,21 @@ function love.load()
 	--< End Initialize SYSTEMS
 
 	-- Add some blocks
-	world:add_block(0, 16, 32, 32, 0.2, 0);
+	world:add_block(0, 32, 32, 32, 0.2, 0);
 	world:add_block(32, 32, 32, 32, 0.2, 0);
 	world:add_block(64, 32, 32, 32, 0.2, 0);
 	world:add_block(96, 32, 1024, 32, 0.2, 0);
 	world:add_block(1024, 16, 32, 32, 0.2, 0);
+	world:add_block(32, -96, 32, 32, 0.2, 0);
+	world:add_block(32, -32, 32, 31, 0.2, 0);
+
 
 	-- Add a player
 
-	ECS:new_entity("player", {x=32, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=64, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=80, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
-	ECS:new_entity("npcs", {x=96, y=-200, w=16, h=16, friction=0.2, bounciness=0.1})
+	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
 
 	-- Testing
 	-- local v = vector(1,2)^1;

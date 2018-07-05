@@ -127,13 +127,15 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
 		local sum = Friction_add_vel + non_friction_vec_vel + bounce_vector;
 		-- Update the velocities
-		v.vel = v.vel + (v2.m/(v.m+v2.m)) * sum;
-		v2.vel = v2.vel - (v.m/(v2.m+v.m)) * sum;
+		local v2v = (v2.m/(v.m+v2.m));
+		local vv2 = (v.m/(v2.m+v.m));
+		v.vel = v.vel + v2v * sum;
+		v2.vel = v2.vel - vv2 * sum;
 
-		v.pos.x = v.pos.x - chx
-		v.pos.y = v.pos.y - chy
-		v2.pos.x = v2.pos.x + chx
-		v2.pos.y = v2.pos.y + chy
+		v.pos.x = v.pos.x - 2 * v2v * chx
+		v.pos.y = v.pos.y - 2 * v2v * chy
+		v2.pos.x = v2.pos.x + 2 * vv2 * chx
+		v2.pos.y = v2.pos.y + 2 * vv2 * chy
 
 		if chx == 0 then
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened

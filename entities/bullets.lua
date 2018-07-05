@@ -15,7 +15,7 @@ function bullets:add(info)
     -- info.giver_body_id for the id of the entity that shot the bullet (*mandatory)
     -- info.self_hit_allowed
     -- info.avoid_type
-    local body_id, body = ECS:new_component("body", "bullets", index, info.pos[1] or 0, info.pos[2] or 0, info.w or 3, info.h or 3)
+    local body_id, body = ECS:new_component("body", "bullets", global_id, info.pos.x or 0, info.pos.y or 0, info.w or 3, info.h or 3)
     local m = {body_id=body_id,
         body=body,
         holder={
@@ -35,7 +35,7 @@ function bullets:add(info)
     end
 
     m.body.gravity_effect = 0.01;
-    m.body.vel = (info.direction or error('info.direction vector no given', 2))/(vector.getlength(info.direction)) * bulletspeed; -- length = 1
+    m.body.v = (info.direction or error('info.direction vector no given', 2))^bulletspeed; -- length = 1
     self.bullets[global_id] = m;
     global_id = global_id + 1;
 
@@ -52,7 +52,7 @@ end
 function bullets:draw()
     for k,v in pairs(self.bullets) do
         love.graphics.setColor(bulletcolor);
-        sdraw.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
+        sdraw.rectangle("fill", v.body.body.p.x, v.body.body.p.y, v.body.body.w, v.body.body.h);
         --love.graphics.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
     end
 end

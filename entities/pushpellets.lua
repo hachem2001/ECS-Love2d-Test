@@ -2,7 +2,8 @@ local pushpellets = {}
 pushpellets.pushpellets = {}
 
 local pushpelletcolor = colorutils:neww(210, 0, 0, 255)
-local pushpelletspeed = 200;
+local pushpelletspeed = 1000;
+local pushpelletmass = 200;
 local pushpellet_life_time = 30;
 local global_id = 1;
 
@@ -18,7 +19,7 @@ function pushpellets:add(info)
     local w,h = info.w or 0, info.h or 0
     local body_id, body = ECS:new_component(
         "body", "pushpellets", index, info.pos.x or 0, info.pos.y or 0, w, h,
-        50)
+        pushpelletmass)
     local m = {body_id=body_id,
         body=body,
         holder={

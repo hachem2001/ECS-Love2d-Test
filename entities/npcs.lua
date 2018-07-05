@@ -29,8 +29,8 @@ function npcs:update(dt)
 	if delay < 0 then
 		local player = ECS.entities["player"]
 		for k,v in pairs(self.npcs) do
-			ECS:new_entity("pushpellets", {pos = vector(v.body.pos.x, v.body.pos.y),
-							direction=vector(player.body.pos.x - v.body.pos.x, player.body.pos.y- v.body.pos.y),
+			ECS:new_entity("bullets", {pos = vector(v.body.body.p.x, v.body.body.p.y),
+							direction=vector(player.body.body.p.x - v.body.body.p.x, player.body.body.p.y- v.body.body.p.y),
 							name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true})
 		end
 		delay = DELAY;
@@ -40,7 +40,7 @@ end
 function npcs:draw()
 	for k,v in pairs(self.npcs) do
 		love.graphics.setColor(1,1,1,1)
-		sdraw.rectangle("fill", v.body.pos.x-v.body.w/2, v.body.pos.y-v.body.h/2, v.body.w, v.body.h) -- Smart draw won't render this if it's away from camera. more handy
+		sdraw.rectangle("fill", v.body.body.p.x-v.body.body.w/2, v.body.body.p.y-v.body.body.h/2, v.body.body.w, v.body.body.h) -- Smart draw won't render this if it's away from camera. more handy
 		--love.graphics.rectangle("fill", v.body.pos.x-v.body.w/2, v.body.pos.y-v.body.h/2, v.body.w, v.body.h)
 	end
 end

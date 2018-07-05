@@ -9,7 +9,7 @@ local global_id = 1;
 function pushpellets:add(info)
     -- requires :
     -- info.pos (vector) for start position
-    -- info.direction (vector) for direction of pushpellet (* mandatory)
+    -- info.direction (vector) for direction of pushpellet (*mandatory)
     -- info.name for name of entity type that wants to spawn the pushpellet (*mandatory)
     -- info.id for entity id of the entity that spawns it (*mandatory)
     -- info.giver_body_id for the id of the entity that shot the pushpellet (*mandatory)
@@ -38,7 +38,7 @@ function pushpellets:add(info)
     end
 
     m.body.gravity_effect = 0.01;
-    m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed; -- length = 1
+    m.body.body.v = (info.direction or error('info.direction vector no given', 2))^pushpelletspeed; -- does same thing as in bullets
     self.pushpellets[global_id] = m;
     global_id = global_id + 1;
 
@@ -55,7 +55,7 @@ end
 function pushpellets:draw()
     for k,v in pairs(self.pushpellets) do
         love.graphics.setColor(pushpelletcolor)
-        sdraw.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2)
+        sdraw.rectangle("fill", v.body.body.p.x-2, v.body.body.p.y-2, v.body.body.w+2, v.body.body.h+2)
         --love.graphics.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2);
     end
 end

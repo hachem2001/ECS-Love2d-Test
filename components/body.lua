@@ -1,7 +1,9 @@
---[[local ffi = require "ffi"
+local ffi = require "ffi"
 -- x y w and h are self explanatory. vx and vy are the velocity, m is the mass. f is the friction and b is the bounciness
 ffi.cdef[[
-	typedef struct {double x, y, vx, vy, w, h, m, f, b; } body_t;
+	typedef struct {double x, y;} vector_t;
+	typedef struct {vector_t p,v; // p for position v for velocity
+					double w, h, m, f, b; } body_t;
 ]]
 
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
@@ -11,14 +13,12 @@ local materials = {plastic = 1, gold = 2.8, iron=7.3} -- Perhaps I'll use this a
 local global_id = 1
 
 function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
+	local bod = ffi.new("body_t")
+	bod.p = vector(x or 0, y or 0);
+	bod.w, bod.h, bod.m, bod.f, bod.b = w or 0, h or 0, m or (w or 0)*(h or 0), friction or 0, bounciness or 0
 	local m = {
-			pos=vector(x, y),
-			vel=vector(0,0),
-			w = w or 1, h = h or 1,
-			px=0, py=0,
-			m = m or w*h,
-			friction = friction or 1,
-			bounciness = bounciness or 0,
+			body = bod,
+			px=0,py=0;
 			holder = {name = entity_name, id = entity_id}, -- the entity that is holding this
 			last_collided_with = {}, -- contains the last_entites that were collided with : { {entitytype, id}, {enttype, id}, ...}
 			-- if collision happened with the world, it would be {"world", block_id}
@@ -78,23 +78,23 @@ end
 
 local function collide_world(obj, world_block) -- if bounce is needed, it can be specified and used to reverse the obj's velocity
 	local v, v2 = obj, world_block
-	local result, chx, chy = coll_box_box(v.pos.x, v.pos.y, v.w, v.h, v2[1], v2[2], v2[3], v2[4])
+	local result, chx, chy = coll_box_box(v.body.p.x, v.body.p.y, v.body.w, v.body.h, v2[1], v2[2], v2[3], v2[4])
 	if result then
 		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		if math.abs(chx) <= math.abs(chy) then
 			chy = 0;
 			v.px = v.px-chx -- Reverse this to indicate that a push on X on the opposite direction happened
-			v.vel.y = v.vel.y * (1/(1+v.friction*v2[6])); -- apply friction
-			v.vel.x = -v.vel.x * (v.bounciness+v2[7]); -- Collision on X, so vel.x becomes 0
+			v.body.v.y = v.body.v.y * (1/(1+v.body.f*v2[6])); -- apply friction
+			v.body.v.x = -v.body.v.x * (v.body.b+v2[7]); -- Collision on X, so vel.x becomes 0
 		else
 			chx = 0;
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened
-			v.vel.y = -v.vel.y * (v.bounciness+v2[7]); -- Collision ends on Y, so vel.y becomes 0
-			v.vel.x = v.vel.x * (1/(1+v.friction*v2[6])); -- apply friction
+			v.body.v.y = -v.body.v.y * (v.body.b+v2[7]); -- Collision ends on Y, so vel.y becomes 0
+			v.body.v.x = v.body.v.x * (1/(1+v.body.f*v2[6])); -- apply friction
 		end
 
-		v.pos.x = v.pos.x - chx;
-		v.pos.y = v.pos.y - chy;
+		v.body.p.x = v.body.p.x - chx;
+		v.body.p.y = v.body.p.y - chy;
 
 		return true;
 	end
@@ -104,7 +104,7 @@ end
 local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects are pushed and the velocity vectors
 	-- of the two are tweaked such that some part of each gets added to the other's
 	local v, v2 = obj1, obj2
-	local result, chx, chy = coll_box_box(v.pos.x, v.pos.y, v.w, v.h, v2.pos.x, v2.pos.y, v2.w, v2.h)
+	local result, chx, chy = coll_box_box(v.body.p.x, v.body.p.y, v.body.w, v.body.h, v2.body.p.x, v2.body.p.y, v2.body.w, v2.body.h)
 	if result then		
 		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		-- ^ this vector MUST BE normal. In case of a rotational world, the reason for this becomes even more obvious.
@@ -112,28 +112,29 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		if math.abs(chx) <= math.abs(chy) then
 			chy = 0;
 			friction_line_vector = vector(0,1);
-			bounce_vector = vector(v2.vel.x-v.vel.x,0)*(v.bounciness+v2.bounciness);
+			bounce_vector = vector(v2.body.v.x-v.body.v.x,0)*(v.body.b+v2.body.b);
 		else
 			chx = 0;
 			friction_line_vector = vector(1,0);
-			bounce_vector = vector(0,v2.vel.y-v.vel.y)*(v.bounciness+v2.bounciness);
+			bounce_vector = vector(0,v2.body.v.y-v.body.v.y)*(v.body.b+v2.body.b);
 		end
-		local DIFF_VEC_VEL = v2.vel - v.vel -- Velocity difference vector
+
+		local DIFF_VEC_VEL = v2.body.v - v.body.v -- Velocity difference vector
 		local friction_vec_vel = friction_line_vector * (friction_line_vector*DIFF_VEC_VEL); -- Get the friction vector part of the difference vector
 		local non_friction_vec_vel = DIFF_VEC_VEL - friction_vec_vel;
-		local friction_product = v.friction * v2.friction -- Yes, I work with the product of the frictions of the two objects
+		local friction_product = v.body.f * v2.body.f -- Yes, I work with the product of the frictions of the two objects
 		
 		-- Precalculate some things :
 		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
 		local sum = Friction_add_vel + non_friction_vec_vel + bounce_vector;
 		-- Update the velocities
-		v.vel = v.vel + (v2.m/(v.m+v2.m)) * sum;
-		v2.vel = v2.vel - (v.m/(v2.m+v.m)) * sum;
+		v.body.v = v.body.v + (v2.body.m/(v.body.m+v2.body.m)) * sum;
+		v2.body.v = v2.body.v - (v.body.m/(v2.body.m+v.body.m)) * sum;
 
-		v.pos.x = v.pos.x - chx
-		v.pos.y = v.pos.y - chy
-		v2.pos.x = v2.pos.x + chx
-		v2.pos.y = v2.pos.y + chy
+		v.body.p.x = v.body.p.x - chx
+		v.body.p.y = v.body.p.y - chy
+		v2.body.p.x = v2.body.p.x + chx
+		v2.body.p.y = v2.body.p.y + chy
 
 		if chx == 0 then
 			v.py = v.py-chy -- Reverse this to indicate that a push on Y on the opposite direction happened
@@ -155,8 +156,9 @@ function bodies:update(dt)
 		if v then
 			v.px = 0 -- Direction of X movement (before collision)
 			v.py = 0 -- Direction of Y movement (before collision)
-			v.vel = v.vel + world.gravity*v.gravity_effect*dt
-			v.pos = v.pos + v.vel*dt
+			v.body.v = v.body.v + world.gravity*v.gravity_effect*dt;
+			v.body.p = v.body.p + v.body.v * dt;
+
 			v.last_collided_with = {};
 			if not v.categories_to_avoid["world"] then -- If the collision with the world is not disabled
 				for k2,v2 in pairs(world.blocks) do

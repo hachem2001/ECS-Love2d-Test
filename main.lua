@@ -68,7 +68,7 @@ function love.update(dt)
 	mousex,mousey	= love.mouse.getPosition()				-- Update the position of the mouse ( in any circumstances )
 	ECS:update(dt);
 
-	camera:set_position(ECS.entities["player"].body.pos.x, ECS.entities["player"].body.pos.y)
+	camera:set_position(ECS.entities["player"].body.body.p.x, ECS.entities["player"].body.body.p.y)
 	camera:update(dt);
 end
 

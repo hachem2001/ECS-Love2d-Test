@@ -35,7 +35,7 @@ function bullets:add(info)
     end
 
     m.body.gravity_effect = 0.01;
-    m.body.v = (info.direction or error('info.direction vector no given', 2))^bulletspeed; -- length = 1
+    m.body.vel = (info.direction or error('info.direction vector no given', 2))^bulletspeed; -- length = 1
     self.bullets[global_id] = m;
     global_id = global_id + 1;
 
@@ -52,7 +52,7 @@ end
 function bullets:draw()
     for k,v in pairs(self.bullets) do
         love.graphics.setColor(bulletcolor);
-        sdraw.rectangle("fill", v.body.body.p.x, v.body.body.p.y, v.body.body.w, v.body.body.h);
+        sdraw.rectangle("fill", v.body.pos.x, v.body.pos.y, v.body.w, v.body.h);
         --love.graphics.rectangle("fill", v.body.pos[1], v.body.pos[2], v.body.w, v.body.h);
     end
 end

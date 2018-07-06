@@ -5,12 +5,15 @@ ffi.cdef[[
 ]]
 
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
-bodies.bodies = {};
+bodies.bodies = {}; -- contains the bodies
+bodies.boxes = {} -- used to divide the world into sections
 
-local materials = {plastic = 1, gold = 2.8, iron=7.3} -- Perhaps I'll use this at a later stage
-local global_id = 1
+local BOX_DIV_W, BOX_DIV_H = 1000, 1000; -- divides the world by 1000x1000 boxes
+
+local global_id = 1;
 
 function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
+	-- if m == -1 the 
 	local m = {
 			pos=vector(x, y),
 			vel=vector(0,0),
@@ -25,7 +28,8 @@ function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness)
 			gravity_effect = 1,
 			categories_to_avoid = {}, -- Avoid collision with bodies whose holder name is of such category. "world" is used for the.
 			ids_to_avoid = {}, -- Avoid collision with certain ids
-			collide_with_entities = true, -- can be set to false to make it only collide with the world
+			collide = true, -- can be set to false to make it not collide with anything
+			static = m < 0,
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
 	self.bodies[global_id] = m;
@@ -78,7 +82,7 @@ end
 
 local function collide_world(obj, world_block) -- if bounce is needed, it can be specified and used to reverse the obj's velocity
 	local v, v2 = obj, world_block
-	local result, chx, chy = coll_box_box(v.pos.x, v.pos.y, v.w, v.h, v2[1], v2[2], v2[3], v2[4])
+	local result, chx, chy = coll_box_box(v.pos.x, v.pos.y, v.w, v.h, v2.pos.x, v2.pos.y, v2.w, v2.h)
 	if result then
 		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		if math.abs(chx) <= math.abs(chy) then
@@ -150,36 +154,51 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 	return false
 end
 
-function bodies:update(dt)
-	-- World collision MUST be BEFORE body woth body collision
-	for k=global_id-1, 1, -1 do
-		local v = self.bodies[k]
-		if v then
-			v.px = 0 -- Direction of X movement (before collision)
-			v.py = 0 -- Direction of Y movement (before collision)
-			v.vel = v.vel + world.gravity*v.gravity_effect*dt
-			v.pos = v.pos + v.vel*dt
-			v.last_collided_with = {};
-			if not v.categories_to_avoid["world"] then -- If the collision with the world is not disabled
-				for k2,v2 in pairs(world.blocks) do
-					local coll = collide_world(v, v2)
-					if coll then
-						v.last_collided_with[#v.last_collided_with+1] = {"world", k2};
-					end
+function bodies:update_boxes() -- updates the layouts
+	-- first, delete all boxes
+	self.boxes = {}
+	for k,v in pairs(self.bodies) do
+		local first_box_X, first_box_Y = math.floor(v.pos.x/BOX_DIV_W), math.floor(v.pos.y/BOX_DIV_H)
+		for X=0, math.ceil(v.w/BOX_DIV_W) do 
+			for Y = 0, math.ceil(v.h/BOX_DIV_H) do
+				if self.boxes[X] and self.boxes[X][Y] then self.boxes[X][Y][#self.boxes[X][Y]] = k -- it's a cool trick to store this using vectors, so I use less memory
+				else self.boxes[X] = {[Y] = {k}}
 				end
 			end
 		end
 	end
-	for k=global_id-1, 1, -1 do
-		local v = self.bodies[k]
-		if v and v.collide_with_entities then
-			for k2 = k-1, 1, -1 do
-				local v2 = self.bodies[k2]
-				if v2 and not v.ids_to_avoid[k2] and not v2.ids_to_avoid[k] and not v.categories_to_avoid[v2.holder.name] and not v2.categories_to_avoid[v.holder.name] then -- if the collision with the body k2 and k is not disabled by one of them
-					local coll = collide_obj(v, v2)
-					if coll then
-						v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};
-						v2.last_collided_with[#v2.last_collided_with+1] = {v.holder.name, v.holder.id};
+end
+
+function bodies:update(dt)
+	-- World collision MUST be BEFORE body woth body collision
+	for k,v in pairs(self.boxes) do
+		obj1.px = 0 -- Direction of X movement (before collision)
+		obj1.py = 0 -- Direction of Y movement (before collision)
+		obj1.vel = obj1.vel + world.gravity*obj1.gravity_effect*dt
+		obj1.pos = obj1.pos + obj1.vel*dt
+		obj1.last_collided_with = {};
+	end
+	for k,v in pairs(self.boxes) do
+		if #v>1 then
+			for k2 = #v, 1, -1 do
+				local obj1 = self.bodies[v[k2]]
+				if obj1.collide then
+					for k3 = k2-1, 1, -1 do
+						local obj2 = self.bodies[v]
+						if not obj1.categories_to_avoid[obj2.holder.name] and not obj2.categories_to_avoid[obj1holder.name] and not obj1.ids_to_avoid[k2] and not obj2.ids_to_avoid[k] then -- if the collision with the body k2 and k is not disabled by one of them
+							local coll;
+							if obj2.static and not obj1.static then -- 2 static objects don't need to collide
+								coll = collide_world(obj1, obj2);
+							elseif obj1.static then
+								coll = collide_world(obj2, obj1)
+							else
+								coll = collide_obj(obj1, obj2)
+							end
+							if coll then
+								v.last_collided_with[#v.last_collided_with+1] = {v2.holder.name, v2.holder.id};
+								v2.last_collided_with[#v2.last_collided_with+1] = {v.holder.name, v.holder.id};		
+							end
+						end
 					end
 				end
 			end

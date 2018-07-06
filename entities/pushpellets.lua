@@ -2,8 +2,8 @@ local pushpellets = {}
 pushpellets.pushpellets = {}
 
 local pushpelletcolor = colorutils:neww(210, 0, 0, 255)
-local pushpelletspeed = 1000;
-local pushpelletmass = 200;
+local pushpelletspeed = 200;
+local pushpelletmass = 20;
 local pushpellet_life_time = 30;
 local global_id = 1;
 

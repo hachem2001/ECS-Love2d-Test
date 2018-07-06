@@ -19,7 +19,6 @@ function love.load()
 	camera 		= require "camera"					-- The camera library
 	sdraw		= require "smart_draw"
 	ECS			= require "ECS"						-- Entity Component System
-	world		= require "world"					-- World 
 	--< End Get SYSTEMS
 
 
@@ -27,22 +26,16 @@ function love.load()
 	ECS:initialize();
 	--< End Initialize SYSTEMS
 
-	-- Add some blocks
-	world:add_block(0, 32, 32, 32, 0.2, 0);
-	world:add_block(32, 32, 32, 32, 0.2, 0);
-	world:add_block(64, 32, 32, 32, 0.2, 0);
-	world:add_block(96, 32, 1024, 32, 0.2, 0);
-	world:add_block(1024, 16, 32, 32, 0.2, 0);
-	world:add_block(32, -96, 32, 32, 0.2, 0);
-	world:add_block(32, -32, 32, 31, 0.2, 0);
-
 
 	-- Add a player
-
 	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
+	-- Add NPCS
 	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
+	-- Add some blocks
+	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0.1})
+
 
 	-- Testing
 	-- local v = vector(1,2)^1;
@@ -62,7 +55,6 @@ function love.draw()
 	love.window.setTitle(love.timer.getFPS());
 
 	camera:set()
-	world:draw();
 	ECS:draw()
 	camera:unset()
 end

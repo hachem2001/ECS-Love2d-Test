@@ -55,7 +55,7 @@ function player:update(dt) -- In the future, I might seperate the update functio
 	end
 
 	if love.keyboard.isDown("up") and self:is_on_ground() and self.jump_delay<0 then
-		self.body.vel.y = self.body.vel.y - world:to_pixels(9.1); -- Relative jump.
+		self.body.vel.y = self.body.vel.y - ECS.components.body:to_pixels(9.1); -- Relative jump.
 		self.jump_delay = jdelay;
 	end
 end
@@ -68,7 +68,7 @@ function player:mousepressed(x, y, button)
 	if button == 1 then	
 		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir })
 	elseif button == 2 then
-		world:add_block(wx, wy, 32, 32, 7, 0);
+		ECS:new_entity("world", {x=wx, y=wy, w=32 , h=32, friction=0.6, bounciness=0.1})
 	end
 end
 

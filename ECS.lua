@@ -1,8 +1,8 @@
 --[[
 	The big changes :
-	• Entities are divided into batches. The player is his own batch with 1 single plaer,
+	• entities are divided into batches. The player is his own batch with 1 single plaer,
 	but many other players
-	• Components are also divided in batches. Positions are run in one file, same goes for rigid bodies
+	• components are also divided in batches. Positions are run in one file, same goes for rigid bodies
 	etc
 ]]
 local ECS = {}
@@ -10,6 +10,7 @@ ECS._entities_path	  = "entities/"
 ECS._components_path	= "components/"
 
 ECS._entity_names = {
+	world = "world.lua",
 	player = "player.lua",
 	npcs = "npcs.lua",
 	bullets = "bullets.lua",
@@ -27,6 +28,9 @@ ECS.entities   = {}
 ECS.entities_to_destroy	 = {}
 ECS.components_to_destroy   = {}
 
+ECS.components_draw_order = {}
+ECS.entities_draw_order = {}
+
 -- The components table stores components as classified by tables.
 -- As such, each batch of components of the same type are updated together in the same script which is
 -- The script that is used to load them
@@ -37,17 +41,28 @@ function ECS:initialize()
 	for k,v in pairs(self._component_names) do
 		print("\tLoaded : "..k.." "..v);
 		self.components[k] = love.filesystem.load(self._components_path..v)()
+		if self.components[k].draw then
+			self.components_draw_order[#self.components_draw_order+1] = k
+			self.components[k].__draw_order = self.components[k].__draw_order or 9999
+		end
 	end
 
 	print("Loading entities :")
 	for k,v in pairs(self._entity_names) do
 		print("\tLoaded : "..k.." "..v);
 		self.entities[k] = love.filesystem.load(self._entities_path..v)()
+		if self.entities[k].draw then
+			self.entities_draw_order[#self.entities_draw_order+1] = k
+			self.entities[k].__draw_order = self.entities[k].__draw_order or 9999
+		end
 	end
+
+	table.sort(self.components_draw_order, function(a, b) return self.components[a].__draw_order < self.components[b].__draw_order end)
+	table.sort(self.entities_draw_order, function(a, b) return self.entities[a].__draw_order < self.entities[b].__draw_order end)
 end
 
 local function sort_by_layer(a, b)
-	return a.layer < b.player
+	return a.layer < b.layer
 end
 --
 -- REMARK : ENTITY WORKS IS SUPPLIED WITH AN INFO TABLE
@@ -88,15 +103,11 @@ end
 --
 
 function ECS:draw()
-	for k,v in pairs(self.components) do
-		if v.draw then
-			v:draw()
-		end
+	for i,v in ipairs(self.components_draw_order) do
+		self.components[v]:draw()
 	end
-	for k,v in pairs(self.entities) do
-		if v.draw then
-			v:draw()
-		end
+	for i,v in ipairs(self.entities_draw_order) do
+		self.entities[v]:draw()
 	end
 end
 

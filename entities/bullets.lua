@@ -2,7 +2,7 @@ local bullets = {}
 bullets.bullets = {}
 
 local bulletcolor = colorutils:neww(210, 0, 0, 255)
-local bulletspeed = 100;
+local bulletspeed = 0;
 local bullet_life_time = 5;
 local global_id = 1;
 
@@ -34,7 +34,7 @@ function bullets:add(info)
         ECS.components['body']:avoid_category(m.body_id, info.name);
     end
 
-    m.body.gravity_effect = 0.01;
+    m.body.gravity_effect = 0.0;
     m.body.vel = (info.direction or error('info.direction vector no given', 2))^bulletspeed; -- length = 1
     self.bullets[global_id] = m;
     global_id = global_id + 1;
@@ -43,6 +43,9 @@ function bullets:add(info)
 end
 
 function bullets:destroy(id)
+    if true then
+    return false;
+    end
     if self.bullets[id] then
         ECS:queue_component_destroy("body", self.bullets[id].body_id);
         self.bullets[id] = nil;

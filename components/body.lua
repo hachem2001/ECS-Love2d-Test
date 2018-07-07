@@ -18,9 +18,9 @@ function bodies:to_pixels(meters)
 end
 bodies.gravity = vector(0, bodies:to_pixels(9.1));
 
-local BOX_DIV_W, BOX_DIV_H = 96, 96; -- divides the world by boxes
-local min_box_w, min_box_h = 16, 16; -- Minimum box size
-local num_on_div = 15; -- Number of entities on which a box would split on 4
+local BOX_DIV_W, BOX_DIV_H = 512, 512; -- divides the world by boxes
+local min_box_w, min_box_h = 255, 255; -- Minimum box size
+local num_on_div = 11; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 
@@ -65,6 +65,11 @@ end
 function bodies:destroy(id) -- returns a pos by id. This is okay to do, but a very more
 	-- efficient way of doing this is by indexing the position
 	self.bodies[id] = nil;
+end
+
+local function small_coll(x1, y1, w1, h1, x2, y2, w2, h2) -- used just to know if collision happened
+	local dx, dy = x2-w2/2-x1+w1/2, y2-h2/2-y1+h1/2;
+	return dx<w1 and dx>-w2 and dy<h1 and dy>-h2;
 end
 
 local function coll_box_box(x1, y1, w1, h1, x2, y2, w2, h2) -- returns result, chx, chy ( chx and chy for how much to move the objects )
@@ -166,10 +171,38 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 	end
 	return false
 end
-
-function bodies:div_box(tbl, divw, divh)
-	for kk,k in pais(tbl) do
+function bodies:div_box(tbl, divw, divh, X, Y, dt)
+	local ms = {}
+	for kk,k in ipairs(tbl) do
 		local v = self.bodies[k]
+		local mx = math.abs(v.vel.x * dt);
+		local my = math.abs(v.vel.y * dt);
+		local first_box_X, first_box_Y = math.floor((v.pos.x-v.w/2-mx)/divw), math.floor((v.pos.y-v.h/2-my)/divh)
+		local end_X, end_Y = math.floor((v.pos.x+v.w/2+mx)/divw), math.floor((v.pos.y+v.h/2+my)/divh)
+
+		for MMX=first_box_X, end_X do 
+			for MMY=first_box_Y, end_Y do
+				local MX, MY = MMX*divw,MMY*divh;
+				if ms[MX] then
+					if ms[MX][MY] then
+						local index = #ms[MX][MY]+1
+						ms[MX][MY][index] = k
+					else
+						ms[MX][MY] = {k,w=divw, h=divh};
+					end
+				else
+					ms[MX] = {[MY] = {k,w=divw, h=divh}}
+				end
+			end
+		end
+	end
+	for XX,vv in pairs(ms) do
+		for YY, v in pairs(vv) do
+			if not self.boxes[XX] then
+				self.boxes[XX] = {}
+			end
+			self.boxes[XX][YY] = v;
+		end
 	end
 end
 
@@ -190,13 +223,27 @@ function bodies:update_boxes(dt) -- updates the layouts
 						local index = #self.boxes[MX][MY]+1
 						self.boxes[MX][MY][index] = k
 					else
-						self.boxes[MX][MY] = {k};
+						self.boxes[MX][MY] = {k,w=BOX_DIV_W, h=BOX_DIV_H};
 					end
 				else
-					self.boxes[MX] = {[MY] = {k}}
+					self.boxes[MX] = {[MY] = {k,w=BOX_DIV_W, h=BOX_DIV_H}}
 				end
 			end
 		end
+	end
+	local to_del = {}
+	for X, vv in pairs(self.boxes) do
+		for Y, v in pairs(vv) do
+			if #v> num_on_div and v.w/2>min_box_w and v.h/2>min_box_h then
+				local m = self:div_box(v, v.w/2, v.h/2, X, Y, dt)
+				if #self.boxes[X][Y] == 0 then
+					to_del[#to_del+1] = {X, Y};
+				end
+			end
+		end
+	end
+	for k, v in pairs(to_del) do
+		self.boxes[v[1]][v[2]] = nil;
 	end
 end
 
@@ -204,8 +251,8 @@ function bodies:draw()
 	if self.debug then
 		for MX,vv in pairs(self.boxes) do
 			for MY, v in pairs(vv) do
-				love.graphics.setColor(1,1,1,.5);
-				love.graphics.rectangle('fill', MX, MY, BOX_DIV_W, BOX_DIV_H);
+				love.graphics.setColor(1,1,1,1-(v.w/BOX_DIV_W)/2);
+				love.graphics.rectangle('fill', MX, MY, v.w, v.h);
 			end
 		end
 	end

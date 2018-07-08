@@ -66,7 +66,7 @@ function player:mousepressed(x, y, button)
 
 	local dir = vector(wx-self.body.pos.x, wy-self.body.pos.y)
 	if button == 1 then	
-		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir })
+		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true})
 	elseif button == 2 then
 		ECS:new_entity("world", {x=wx, y=wy, w=32 , h=32, friction=0.6, bounciness=0.1})
 	end

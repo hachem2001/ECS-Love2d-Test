@@ -63,16 +63,18 @@ function love.draw()
 end
 
 function love.update(dt)
-	mousex,mousey	= love.mouse.getPosition()				-- Update the position of the mouse ( in any circumstances )
-	ECS:update(dt);
+	if dt < 200/1000 then --shouldn't update when game is too slow
+		mousex,mousey	= love.mouse.getPosition()				-- Update the position of the mouse ( in any circumstances )
+		ECS:update(dt);
 
-	camera:set_position(ECS.entities["player"].body.pos.x, ECS.entities["player"].body.pos.y)
-	camera:update(dt);
+		camera:set_position(ECS.entities["player"].body.pos.x, ECS.entities["player"].body.pos.y)
+		camera:update(dt);
 
-	_DELAY_T = _DELAY_T - dt;
-	if _DELAY_T < 0 then
-		--print("Current memory usage "..(collectgarbage("count")))
-		_DELAY_T = _DELAY_TT;
+		_DELAY_T = _DELAY_T - dt;
+		if _DELAY_T < 0 then
+			--print("Current memory usage "..(collectgarbage("count")))
+			_DELAY_T = _DELAY_TT;
+		end
 	end
 end
 

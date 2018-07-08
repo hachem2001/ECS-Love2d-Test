@@ -196,7 +196,7 @@ function bodies:div_box(tbl, divw, divh, X, Y, dt)
 			end
 		end
 	end
-	tbl = {w=tbl.w, h=tbl.h};
+	self.boxes[X][Y] = {w=tbl.w, h=tbl.h};
 	for XX,vv in pairs(ms) do
 		for YY, v in pairs(vv) do
 			if not self.boxes[XX] then
@@ -236,6 +236,7 @@ function bodies:update_boxes(dt) -- updates the layouts
 	for X, vv in pairs(self.boxes) do
 		for Y, v in pairs(vv) do
 			if #v> num_on_div and v.w/2>min_box_w and v.h/2>min_box_h then
+				local prev_v = #v
 				local m = self:div_box(v, v.w/2, v.h/2, X, Y, dt)
 				if #self.boxes[X][Y] == 0 then
 					to_del[#to_del+1] = {X, Y};

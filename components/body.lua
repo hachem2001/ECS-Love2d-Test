@@ -7,7 +7,7 @@ ffi.cdef[[
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
 bodies.bodies = {}; -- contains the bodies
 bodies.boxes = {} -- used to divide the world into sections
-bodies.debug = true;
+bodies.debug = false;
 
 bodies.meter = 32;
 function bodies:to_meter(pixels)
@@ -16,7 +16,7 @@ end
 function bodies:to_pixels(meters)
     return meters*self.meter;
 end
-bodies.gravity = vector(0, bodies:to_pixels(9.1));
+bodies.gravity = vector(bodies:to_pixels(0), bodies:to_pixels(9.1));
 
 local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
 local min_box_w, min_box_h = 31, 31; -- Minimum box size
@@ -262,7 +262,7 @@ function bodies:draw()
 	end
 end
 
-function bodies:update(dt)
+function bodies:pre_update(dt) -- physics update pre_update by default. Because entities might use the result just after
 	self:update_boxes(dt) -- They are updated post this because some entities might be moving fast for example
 	-- World collision MUST be BEFORE body woth body collision
 	for k,v in pairs(self.bodies) do

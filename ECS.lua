@@ -111,15 +111,15 @@ function ECS:draw()
 	end
 end
 
-function ECS:update(dt)
+function ECS:pre_update(dt)
 	for k,v in pairs(self.components) do
-		if v.update then
-			v:update(dt)
+		if v.pre_update then
+			v:pre_update(dt)
 		end
 	end
 	for k,v in pairs(self.entities) do
-		if v.update then
-			v:update(dt)
+		if v.pre_update then
+			v:pre_update(dt)
 		end
 	end
 	
@@ -134,6 +134,23 @@ function ECS:update(dt)
 		table.remove(self.components_to_destroy, k);
 	end
 	
+end
+
+function ECS:update(dt)
+	-- Do pre_update
+	self:pre_update(dt);
+	-- then do update
+	for k,v in pairs(self.components) do
+		if v.update then
+			v:update(dt)
+		end
+	end
+	for k,v in pairs(self.entities) do
+		if v.update then
+			v:update(dt)
+		end
+	end
+	-- entities are destroyed at pre_update
 end
 
 function ECS:keypressed(const, scancode, isrepeat)

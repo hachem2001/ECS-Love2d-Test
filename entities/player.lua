@@ -44,17 +44,17 @@ function player:update(dt) -- In the future, I might seperate the update functio
 		-- Do stuff here
 	end
 
-	if love.keyboard.isDown("right") then
+	if love.keyboard.isScancodeDown("right", "d") then
 		if self.body.vel.x < self.speed then
 			self.body.vel.x = self.body.vel.x+self.speed*dt*3;
 		end
-	elseif love.keyboard.isDown("left") then
+	elseif love.keyboard.isScancodeDown("left", "a") then
 		if self.body.vel.x >-self.speed then
 			self.body.vel.x = self.body.vel.x-self.speed*dt*3;
 		end
 	end
 
-	if love.keyboard.isDown("up") and self:is_on_ground() and self.jump_delay<0 then
+	if love.keyboard.isScancodeDown("up", "w") and self:is_on_ground() and self.jump_delay<0 then
 		self.body.vel.y = self.body.vel.y - ECS.components.body:to_pixels(9.1); -- Relative jump.
 		self.jump_delay = jdelay;
 	end
@@ -68,7 +68,8 @@ function player:mousepressed(x, y, button)
 	if button == 1 then	
 		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true})
 	elseif button == 2 then
-		ECS:new_entity("world", {x=wx, y=wy, w=32 , h=32, friction=0.6, bounciness=0.1})
+		local w, h = 32, 32
+		ECS:new_entity("world", {x=wx-w/2, y=wy-h/2, w=w , h=h, friction=0.6, bounciness=0.1})
 	end
 end
 

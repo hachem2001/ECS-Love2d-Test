@@ -46,6 +46,12 @@ function vector_mt.__pow(op1, op2)
 	return (op1/#op1)*m
 end
 
+function vector_mt.__mod(op1, op2)
+	if type(op2) == "number" then -- rotate vector by op2 radians
+		return vector(op1.x*math.cos(op2) - op1.y*math.sin(op2), op1.x*math.sin(op2) + op1.y*math.cos(op2))
+	end
+end
+
 function vector_mt.__tostring(op1)
 	return "x:"..op1.x..",y:"..op1.y;
 end

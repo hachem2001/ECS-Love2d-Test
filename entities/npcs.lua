@@ -22,16 +22,25 @@ end
 --> Events
 --
 
-local DELAY = 0.01;
+local DELAY = 0.0001;
 local delay = DELAY;
+local shooting_angle = 0;
+local Tau = 2*math.pi;
+
 function npcs:update(dt)
+	shooting_angle = (shooting_angle + 100*Tau*dt)%(Tau);
 	delay = delay - dt;
 	if delay < 0 then
 		local player = ECS.entities["player"]
 		for k,v in pairs(self.npcs) do
-			ECS:new_entity("pushpellets", {pos = vector(v.body.pos.x, v.body.pos.y),
-							direction=vector(player.body.pos.x - v.body.pos.x, player.body.pos.y- v.body.pos.y),
-							name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true})
+--			local direction = vector(player.body.pos.x - v.body.pos.x, player.body.pos.y- v.body.pos.y)%shooting_angle;
+			for i=1,2 do
+				shooting_angle = (shooting_angle + 100*Tau*dt)%(Tau);
+				local direction = vector(1, 0)%shooting_angle;
+				ECS:new_entity("pushpellets", {pos = vector(v.body.pos.x, v.body.pos.y),
+								direction=direction,
+								name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true})
+			end
 		end
 		delay = DELAY;
 	end

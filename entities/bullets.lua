@@ -16,7 +16,7 @@ function bullets:add(info)
     -- info.giver_body_id for the id of the entity that shot the bullet (*mandatory)
     -- info.self_hit_allowed
     -- info.avoid_type
-    local body_id, body = ECS:new_component("body", "bullets", global_id, info.pos.x or 0, info.pos.y or 0, info.w or 3, info.h or 3, bulletmass)
+    local body_id, body = ECS:new_component("body", "bullets", global_id, info.pos.x or 0, info.pos.y or 0, info.w or 2, info.h or 2, bulletmass)
     local m = {body_id=body_id,
         body=body,
         holder={

@@ -20,7 +20,7 @@ bodies.gravity = vector(0, bodies:to_pixels(9.1));
 
 local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
 local min_box_w, min_box_h = 31, 31; -- Minimum box size
-local num_on_div = 20; -- Number of entities on which a box would split on 4
+local num_on_div = 30; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 
@@ -211,8 +211,8 @@ function bodies:update_boxes(dt) -- updates the layouts
 	-- first, delete all boxes
 	self.boxes = {}
 	for k,v in pairs(self.bodies) do
-		local mx = math.abs(v.vel.x * dt);
-		local my = math.abs(v.vel.y * dt);
+		local mx = math.abs(v.vel.x) * dt;
+		local my = math.abs(v.vel.y) * dt;
 		local first_box_X, first_box_Y = math.floor((v.pos.x-v.w/2-mx)/BOX_DIV_W), math.floor((v.pos.y-v.h/2-my)/BOX_DIV_H)
 		local end_X, end_Y = math.floor((v.pos.x+v.w/2+mx)/BOX_DIV_W), math.floor((v.pos.y+v.h/2+my)/BOX_DIV_H)
 
@@ -288,9 +288,9 @@ function bodies:update(dt)
 									local coll;
 									if obj2.static and not obj1.static then -- 2 static objects don't need to collide
 										coll = collide_world(obj1, obj2);
-									elseif obj1.static then
+									elseif obj1.static and not obj2.static then
 										coll = collide_world(obj2, obj1)
-									else
+									elseif not obj1.static then -- and not obj2.static then
 										coll = collide_obj(obj1, obj2)
 									end
 									if coll then

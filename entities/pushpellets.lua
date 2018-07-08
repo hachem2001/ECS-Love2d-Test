@@ -2,9 +2,9 @@ local pushpellets = {}
 pushpellets.pushpellets = {}
 
 local pushpelletcolor = colorutils:neww(210, 0, 0, 255)
-local pushpelletspeed = 200;
-local pushpelletmass = 20;
-local pushpellet_life_time = 30;
+local pushpelletspeed = 300;
+local pushpelletmass = 200;
+local pushpellet_life_time = 1.5;
 local global_id = 1;
 
 function pushpellets:add(info)
@@ -16,7 +16,7 @@ function pushpellets:add(info)
     -- info.giver_body_id for the id of the entity that shot the pushpellet (*mandatory)
     -- info.self_hit_allowed
     -- info.avoid_type
-    local w,h = info.w or 0, info.h or 0
+    local w,h = info.w or 2, info.h or 2
     local body_id, body = ECS:new_component(
         "body", "pushpellets", index, info.pos.x or 0, info.pos.y or 0, w, h,
         pushpelletmass)
@@ -37,6 +37,7 @@ function pushpellets:add(info)
     if info.avoid_type then
         ECS.components['body']:avoid_category(m.body_id, info.name);
     end
+    ECS.components['body']:avoid_category(m.body_id, "pushpellets");
 
     m.body.gravity_effect = 0.01;
     m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed; -- length = 1
@@ -56,7 +57,7 @@ end
 function pushpellets:draw()
     for k,v in pairs(self.pushpellets) do
         love.graphics.setColor(pushpelletcolor)
-        sdraw.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2)
+        sdraw.rectangle("fill", v.body.pos.x-v.body.w/2, v.body.pos.y-v.body.h/2, v.body.w, v.body.h)
         --love.graphics.rectangle("fill", v.body.pos.x-2, v.body.pos.y-2, v.body.w+2, v.body.h+2);
     end
 end

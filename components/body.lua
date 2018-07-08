@@ -18,9 +18,9 @@ function bodies:to_pixels(meters)
 end
 bodies.gravity = vector(0, bodies:to_pixels(9.1));
 
-local BOX_DIV_W, BOX_DIV_H = 512, 512; -- divides the world by boxes
-local min_box_w, min_box_h = 255, 255; -- Minimum box size
-local num_on_div = 11; -- Number of entities on which a box would split on 4
+local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
+local min_box_w, min_box_h = 31, 31; -- Minimum box size
+local num_on_div = 20; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 
@@ -254,7 +254,7 @@ function bodies:draw()
 			for MY, v in pairs(vv) do
 				if #v > 0 then
 					love.graphics.setColor(1,1,1,1-(v.w/BOX_DIV_W)/2);
-					love.graphics.rectangle('fill', MX, MY, v.w, v.h);
+					love.graphics.rectangle('fill', MX+2, MY+2, v.w-2, v.h-2);
 				end
 			end
 		end

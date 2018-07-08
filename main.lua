@@ -30,9 +30,9 @@ function love.load()
 	-- Add a player
 	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
 	-- Add NPCS
-	-- ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
-	-- ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
-	-- ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
+	ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
 	-- Add some blocks
 	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0.1})
 
@@ -44,7 +44,10 @@ function love.load()
 	-- print(v*v2);
 	-- print(v, v2, v3);
 	-- print(vector.getlength(v3));
-	camera:set_scale(0.5,0.5)
+	camera:set_scale(1,1)
+
+	_DELAY_T = 0;
+	_DELAY_TT = 5;
 end
 
 --
@@ -65,6 +68,12 @@ function love.update(dt)
 
 	camera:set_position(ECS.entities["player"].body.pos.x, ECS.entities["player"].body.pos.y)
 	camera:update(dt);
+
+	_DELAY_T = _DELAY_T - dt;
+	if _DELAY_T < 0 then
+		--print("Current memory usage "..(collectgarbage("count")))
+		_DELAY_T = _DELAY_TT;
+	end
 end
 
 function love.keypressed(const, scancode, isrepeat)

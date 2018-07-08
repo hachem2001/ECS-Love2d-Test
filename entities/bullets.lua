@@ -2,7 +2,8 @@ local bullets = {}
 bullets.bullets = {}
 
 local bulletcolor = colorutils:neww(210, 0, 0, 255)
-local bulletspeed = 0;
+local bulletspeed = 100;
+local bulletmass = 200;
 local bullet_life_time = 5;
 local global_id = 1;
 
@@ -15,7 +16,7 @@ function bullets:add(info)
     -- info.giver_body_id for the id of the entity that shot the bullet (*mandatory)
     -- info.self_hit_allowed
     -- info.avoid_type
-    local body_id, body = ECS:new_component("body", "bullets", global_id, info.pos.x or 0, info.pos.y or 0, info.w or 3, info.h or 3)
+    local body_id, body = ECS:new_component("body", "bullets", global_id, info.pos.x or 0, info.pos.y or 0, info.w or 3, info.h or 3, bulletmass)
     local m = {body_id=body_id,
         body=body,
         holder={
@@ -34,11 +35,9 @@ function bullets:add(info)
         ECS.components['body']:avoid_category(m.body_id, info.name);
     end
 
-    m.body.gravity_effect = 0.0;
     m.body.vel = (info.direction or error('info.direction vector no given', 2))^bulletspeed; -- length = 1
     self.bullets[global_id] = m;
     global_id = global_id + 1;
-
     return global_id-1, m;
 end
 

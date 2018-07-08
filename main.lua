@@ -21,7 +21,7 @@ function love.load()
 	ECS			= require "ECS"						-- Entity Component System
 	--< End Get SYSTEMS
 
-
+	print(love.graphics.getRendererInfo())
 	--> Initialize SYSTEMS
 	ECS:initialize();
 	--< End Initialize SYSTEMS
@@ -44,7 +44,7 @@ function love.load()
 	-- print(v*v2);
 	-- print(v, v2, v3);
 	-- print(vector.getlength(v3));
-	--camera:set_scale(0.5,0.5)
+	camera:set_scale(0.5,0.5)
 end
 
 --

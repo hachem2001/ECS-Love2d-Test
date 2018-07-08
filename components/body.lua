@@ -177,8 +177,8 @@ function bodies:div_box(tbl, divw, divh, X, Y, dt)
 		local v = self.bodies[k]
 		local mx = math.abs(v.vel.x * dt);
 		local my = math.abs(v.vel.y * dt);
-		local first_box_X, first_box_Y = math.floor((v.pos.x-v.w/2-mx)/divw), math.floor((v.pos.y-v.h/2-my)/divh)
-		local end_X, end_Y = math.floor((v.pos.x+v.w/2+mx)/divw), math.floor((v.pos.y+v.h/2+my)/divh)
+		local first_box_X, first_box_Y = math.max(X/divw, math.floor((v.pos.x-v.w/2-mx)/divw)), math.max(Y/divh, math.floor((v.pos.y-v.h/2-my)/divh))
+		local end_X, end_Y = math.min((X+divw)/divw, math.floor((v.pos.x+v.w/2+mx)/divw)), math.min((Y+divh)/divh, math.floor((v.pos.y+v.h/2+my)/divh))
 
 		for MMX=first_box_X, end_X do 
 			for MMY=first_box_Y, end_Y do
@@ -196,6 +196,7 @@ function bodies:div_box(tbl, divw, divh, X, Y, dt)
 			end
 		end
 	end
+	tbl = {w=tbl.w, h=tbl.h};
 	for XX,vv in pairs(ms) do
 		for YY, v in pairs(vv) do
 			if not self.boxes[XX] then
@@ -251,8 +252,10 @@ function bodies:draw()
 	if self.debug then
 		for MX,vv in pairs(self.boxes) do
 			for MY, v in pairs(vv) do
-				love.graphics.setColor(1,1,1,1-(v.w/BOX_DIV_W)/2);
-				love.graphics.rectangle('fill', MX, MY, v.w, v.h);
+				if #v > 0 then
+					love.graphics.setColor(1,1,1,1-(v.w/BOX_DIV_W)/2);
+					love.graphics.rectangle('fill', MX, MY, v.w, v.h);
+				end
 			end
 		end
 	end

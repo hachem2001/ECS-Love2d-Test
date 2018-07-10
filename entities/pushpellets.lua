@@ -37,7 +37,7 @@ function pushpellets:add(info)
     if info.avoid_type then
         ECS.components['body']:avoid_category(m.body_id, info.name);
     end
-    ECS.components['body']:avoid_category(m.body_id, "pushpellets");
+    --ECS.components['body']:avoid_category(m.body_id, "pushpellets");
 
     m.body.gravity_effect = 0.01;
     m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed; -- length = 1
@@ -68,7 +68,7 @@ function pushpellets:update(dt)
         v.time_left = v.time_left - dt;
 
         for k2,v2 in pairs(v.body.last_collided_with) do
-            to_delete[k] = true;
+            --to_delete[k] = true;
             break;
         end
 

@@ -20,7 +20,7 @@ bodies.gravity = vector(bodies:to_pixels(0), bodies:to_pixels(9.1));
 
 local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
 local min_box_w, min_box_h = 31, 31; -- Minimum box size
-local num_on_div = 30; -- Number of entities on which a box would split on 4
+local num_on_div = 3000; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 

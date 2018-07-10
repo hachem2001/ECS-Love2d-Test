@@ -22,7 +22,7 @@ end
 --> Events
 --
 
-local DELAY = 0.0001;
+local DELAY = 0.001;
 local delay = DELAY;
 local shooting_angle = 0;
 local Tau = 2*math.pi;

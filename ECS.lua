@@ -35,9 +35,19 @@ ECS.entities_draw_order = {}
 -- As such, each batch of components of the same type are updated together in the same script which is
 -- The script that is used to load them
 
-function ECS:initialize()
+function ECS:initialize(reload)
 	-- COMPONENTS MUST BE INITIALIZED BEFORE ENTITIES. BECAUSE SOME ENTITIES WILL CREATE THEM JUST AS LOADED
-	print("Loading components :")
+	print((reload and "Rel" or "L").."oading components :")
+	if reload then
+		self.components = {}
+		self.entities   = {}
+		
+		self.entities_to_destroy	 = {}
+		self.components_to_destroy   = {}
+		
+		self.components_draw_order = {}
+		self.entities_draw_order = {}
+	end
 	for k,v in pairs(self._component_names) do
 		print("\tLoaded : "..k.." "..v);
 		self.components[k] = love.filesystem.load(self._components_path..v)()
@@ -47,7 +57,7 @@ function ECS:initialize()
 		end
 	end
 
-	print("Loading entities :")
+	print((reload and "Rel" or "L").."oading entities :")
 	for k,v in pairs(self._entity_names) do
 		print("\tLoaded : "..k.." "..v);
 		self.entities[k] = love.filesystem.load(self._entities_path..v)()

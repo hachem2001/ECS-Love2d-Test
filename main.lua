@@ -16,7 +16,8 @@ function love.load()
 	--< End Get APIS
 	--> Get SYSTEMS
 	camera 		= require "camera"					-- The camera library
-	sdraw		= require "smart_draw"
+	inputmanager= require "inputmanager"			-- Inputmanager that makes handling keyboard mouse and joystick inputs a little easier. Still didn't make the mouse and joystick part though
+	sdraw		= require "smart_draw"				-- Was gonna use it to limit my draw calls, didn't update it yet
 	ECS			= require "ECS"						-- Entity Component System
 	--< End Get SYSTEMS
 	gamestates	= require "gamestates"				-- Handles game states.
@@ -38,6 +39,10 @@ function love.load()
 	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0.1})
 	camera:set_scale(1,1)
 
+	inputmanager:map_scancodes("left", "a", "left");
+	inputmanager:map_keys("right", "d", "right");
+	inputmanager:map_scancodes("up", "w", "up");
+
 	_DELAY_T = 0;
 	_DELAY_TT = 5;
 end
@@ -55,18 +60,22 @@ function love.update(dt)
 end
 
 function love.keypressed(const, scancode, isrepeat)
+	inputmanager:keypressed(const, scancode, isrepeat);
 	gamestates:keypressed(const, scancode, isrepeat);
 end
 
 function love.keyreleased(const, scancode, isrepeat)
+	inputmanager:keyreleased(const, scancode, isrepeat);
 	gamestates:keyreleased(const, scancode, isrepeat);
 end
  
 function love.mousepressed(x, y, button, istouch)
+	inputmanager:mousepressed(x, y, button, istouch);
 	gamestates:mousepressed(x,y,button, istouch);
 end 
 
 function love.mousereleased(x, y, button, istouch)
+	inputmanager:mousereleased(x, y, button, istouch)
 	gamestates:mousereleased(x,y,button, istouch);
 end
 

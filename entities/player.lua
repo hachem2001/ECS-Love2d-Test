@@ -44,7 +44,7 @@ function player:update(dt) -- In the future, I might seperate the update functio
 		-- Do stuff here
 	end
 
-	if love.keyboard.isScancodeDown("right", "d") then
+	if inputmanager:get_action("right") then -- love.keyboard.isScancodeDown("right", "d") then
 		if self.body.vel.x < self.speed then
 			self.body.vel.x = self.body.vel.x+self.speed*dt*3;
 		end

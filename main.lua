@@ -30,13 +30,13 @@ function love.load()
 
 
 	-- Add a player
-	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.1})
+	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.9})
 	-- Add NPCS
 	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
 	-- Add some blocks
-	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0.1})
+	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0})
 	camera:set_scale(1,1)
 
 	inputmanager:map_scancodes("left", "a", "left");

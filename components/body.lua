@@ -7,7 +7,7 @@ ffi.cdef[[
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
 bodies.bodies = {}; -- contains the bodies
 bodies.boxes = {} -- used to divide the world into sections
-bodies.debug = false;
+bodies.debug = true;
 
 bodies.meter = 32;
 function bodies:to_meter(pixels)

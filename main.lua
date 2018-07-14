@@ -30,7 +30,7 @@ function love.load()
 
 
 	-- Add a player
-	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0.9})
+	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0})
 	-- Add NPCS
 	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
@@ -40,7 +40,7 @@ function love.load()
 	camera:set_scale(1,1)
 
 	inputmanager:map_scancodes("left", "a", "left");
-	inputmanager:map_keys("right", "d", "right");
+	inputmanager:map_scancodes("right", "d", "right");
 	inputmanager:map_scancodes("up", "w", "up");
 
 	_DELAY_T = 0;
@@ -89,4 +89,38 @@ end
 
 function love.focus(f)
 	gamestates:focus(f);
-end--]]--
+end
+
+function love.joystickadded(Joystick)
+	inputmanager:joystickadded(Joystick);
+	local m = #inputmanager.joysticks;
+	inputmanager:map_joystick_button("up", m, 1);
+	inputmanager:map_joystick_button("right", m, 2);
+	inputmanager:map_joystick_button("left", m, 4);
+
+end
+
+function love.joystickremoved(Joystick)
+	inputmanager:joystickremoved(Joystick);
+end
+
+function love.joystickpressed(Joystick, button)
+	inputmanager:joystickpressed(Joystick, button);
+end
+
+function love.gamepadpressed(Joystick, button)
+	inputmanager:gamepadpressed(Joystick, button)
+end
+
+function love.joystickreleased(Joystick, button)
+	inputmanager:joystickreleased(Joystick, button);
+end
+
+function love.joystickaxis(Joystick, axis, value)
+	inputmanager:joystickaxis(Joystick, axis, value);
+end
+
+function love.joystickhat(Joystick, hat, direction)
+	inputmanager:joystickhat(Joystick, hat, direction);
+end
+--]]--

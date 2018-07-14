@@ -48,13 +48,13 @@ function player:update(dt) -- In the future, I might seperate the update functio
 		if self.body.vel.x < self.speed then
 			self.body.vel.x = self.body.vel.x+self.speed*dt*3;
 		end
-	elseif love.keyboard.isScancodeDown("left", "a") then
+	elseif inputmanager:get_action("left") then
 		if self.body.vel.x >-self.speed then
 			self.body.vel.x = self.body.vel.x-self.speed*dt*3;
 		end
 	end
 
-	if love.keyboard.isScancodeDown("up", "w") and self:is_on_ground() and self.jump_delay<0 then
+	if inputmanager:get_action("up") and self:is_on_ground() and self.jump_delay<0 then
 		self.body.vel.y = self.body.vel.y - ECS.components.body:to_pixels(9.1); -- Relative jump.
 		self.jump_delay = jdelay;
 	end

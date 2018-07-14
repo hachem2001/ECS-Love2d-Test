@@ -17,7 +17,6 @@ inputmanager.joysticks = {} -- joysticks can have variable inputs such as an axi
 
 function inputmanager:map_scancodes(action, ...)
 	local args = {...}
-	print(table.concat(args, ","))
 	for i, v in ipairs(args) do
 		self:map_scancode(action, v)
 	end
@@ -38,7 +37,7 @@ function inputmanager:map_scancode(action, key)
 	if not self.scancodes[key] then
 		self.scancodes[key] = {}
 	end
-	self.actions[action][#self.actions+1] = {"s", key, love.keyboard.isScancodeDown(key)} -- First element is type of information, rest is info
+	self.actions[action][#self.actions[action]+1] = {"s", key, love.keyboard.isScancodeDown(key)} -- First element is type of information, rest is info
 	self.action_states[action] = self.action_states[action] or love.keyboard.isScancodeDown(key);
 	-- since this is a scancode, the first element will be "s"
 	self.scancodes[key][#self.scancodes[key]+1] = action;
@@ -52,7 +51,7 @@ function inputmanager:map_key(action, key)
 	if not self.keys[key] then
 		self.keys[key] = {}
 	end
-	self.actions[action][#self.actions+1] = {"k", key, love.keyboard.isDown(key)} -- First element is type of information, rest is info
+	self.actions[action][#self.actions[action]+1] = {"k", key, love.keyboard.isDown(key)} -- First element is type of information, rest is info
 	self.action_states[action] = self.action_states[action] or love.keyboard.isDown(key);
 	-- since this is a scancode, the first element will be "s"
 	self.keys[key][#self.keys[key]+1] = action;
@@ -66,7 +65,7 @@ function inputmanager:map_mouse(action, mousebutton)
 	if not self.mouse_buttons[mousebutton] then
 		self.mouse_buttons[mousebutton] = {}
 	end
-	self.actions[action][#self.actions+1] = {"m", key, love.mouse.isDown(mousebutton)} -- First element is type of information, rest is info
+	self.actions[action][#self.actions[action]+1] = {"m", key, love.mouse.isDown(mousebutton)} -- First element is type of information, rest is info
 	self.action_states[action] = self.action_states[action] or love.mouse.isDown(key);
 	-- since this is a scancode, the first element will be "s"
 	self.mouse_buttons[mousebutton][#self.mouse_buttons[mousebutton]+1] = action;
@@ -80,13 +79,13 @@ function inputmanager:map_joystick_button(action, joystick_number, joystick_butt
 	if not self.joysticks[joystick_number] then
 		error("Please connect your joystick before you initialize the game.", 2);
 	end
-	if not self.joysticks[joystick_number][joystick_button] then
-		self.joysticks[joystick_number][joystick_button] = {}
+	if not self.joysticks[joystick_number].buttons[joystick_button] then
+		self.joysticks[joystick_number].buttons[joystick_button] = {}
 	end
-	self.actions[action][#self.actions+1] = {"j", joystick_number, self.joysticks[joystick_number]._joystick:isGamepadDown(joystick_button), key} -- First element is type of information, rest is info
-	self.action_states[action] = self.action_states[action] or self.joysticks[joystick_number]._joystick:isGamepadDown(joystick_button);
+	self.actions[action][#self.actions[action]+1] = {"j", joystick_number, self.joysticks[joystick_number]._joystick:isDown(joystick_button), joystick_button} -- First element is type of information, rest is info
+	self.action_states[action] = self.action_states[action] or self.joysticks[joystick_number]._joystick:isDown(joystick_button);
 	-- since this is a scancode, the first element will be "s"
-	self.joysticks[joystick_number].buttons[joystick_button][#self.joysticks[joystick_number][joystick_button]+1] = action;
+	self.joysticks[joystick_number].buttons[joystick_button][#self.joysticks[joystick_number].buttons[joystick_button]+1] = action;
 end
 
 --
@@ -140,7 +139,7 @@ function inputmanager:keyreleased(key, scancode, isrepeat)
 				if v2[1] == "k" and v2[2] == key then
 					v2[3] = false;
 				else
-					result = result or v1[3];
+					result = result or v2[3];
 				end
 			end
 			self.action_states[v] = result;
@@ -151,10 +150,10 @@ function inputmanager:keyreleased(key, scancode, isrepeat)
 		for i,v in ipairs(sactions) do
 			local result = false
 			for k2,v2 in pairs(self.actions[v]) do
-				if v2[1] == "s" and v2[2] == key then
+				if v2[1] == "s" and v2[2] == scancode then
 					v2[3] = false;
 				else
-					result = result or v1[3];
+					result = result or v2[3];
 				end
 			end
 			self.action_states[v] = result;
@@ -171,19 +170,71 @@ function inputmanager:mousereleased(x, y, button, istouch)
 end
 
 function inputmanager:joystickadded(Joystick)
-	
+	self.joysticks[#self.joysticks+1] = {_joystick = Joystick, buttons={}};
 end
 
 function inputmanager:joystickremoved(Joystick)
-	-- We can use Joystick:getID() to remove it from the joysticks list stored
+	-- We can use Joystick:getID() to remove it from the joysticks list stored	
+	for k=#self.joysticks,1,-1 do
+		local id = self.joysticks[k].__joystick:getID();
+		if id == Joystick.getID() then
+			table.remove(self.joysticks, k);
+		end
+	end
+
 end
 
 function inputmanager:joystickpressed(Joystick, button)
-
+	local jk;
+	for k,v in pairs(self.joysticks) do
+		if v._joystick:getID() == Joystick:getID() then
+			jk = k;
+			break;
+		end
+	end
+	if not jk then
+		error("A joystick is connected but not detected by the inputmanager");
+	end
+	local jks = self.joysticks[jk];
+	if jks.buttons[button] then
+		local bactions = jks.buttons[button];
+		for i,v in ipairs(bactions) do
+			for k2,v2 in pairs(self.actions[v]) do
+				if v2[1] == "j" and v2[2] == jk and v2[4] == button then
+					v2[3] = true;
+					self.action_states[v] = true;
+				end
+			end
+		end
+	end
 end
 
 function inputmanager:joystickreleased(Joystick, button)
-
+	local jk;
+	for k,v in pairs(self.joysticks) do
+		if v._joystick:getID() == Joystick:getID() then
+			jk = k;
+			break;
+		end
+	end
+	if not jk then
+		error("A joystick is connected but not detected by the inputmanager");
+	end
+	local jks = self.joysticks[jk];
+	if jks.buttons[button] then
+		local bactions = jks.buttons[button];
+		for i,v in ipairs(bactions) do
+			local result = false;
+			for k2,v2 in pairs(self.actions[v]) do
+				if v2[1] == "j" and v2[2] == jk and v2[4] == button then
+					v2[3] = false
+				else
+					result = result or v2[3];
+				end
+			end
+			self.action_states[v] = result;
+		end
+	end
 end
 
 function inputmanager:joystickaxis(Joystick, axis, value)

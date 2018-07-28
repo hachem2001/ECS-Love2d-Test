@@ -11,12 +11,14 @@ function love.load()
 	mousex,mousey	= love.mouse.getPosition()		-- Get the position of the mouse
 
 	--> Get APIS
+	collision	= require "apis/collision"			-- Simple collision api, to be used for simple stuff like menus and not for physics.
 	colorutils	= require "apis/colorutils"			-- Color library, really useful.
 	vector		= require "apis/vector"				-- Vector library needed
 	--< End Get APIS
 	--> Get SYSTEMS
 	camera 		= require "camera"					-- The camera library
 	inputmanager= require "inputmanager"			-- Inputmanager that makes handling keyboard mouse and joystick inputs a little easier. Still didn't make the mouse and joystick part though
+	audiomanager= require 'audiomanager'			-- Audiomanager that makes playing audio generally easy
 	sdraw		= require "smart_draw"				-- Was gonna use it to limit my draw calls, didn't update it yet
 	ECS			= require "ECS"						-- Entity Component System
 	--< End Get SYSTEMS
@@ -42,6 +44,9 @@ function love.load()
 	inputmanager:map_scancodes("left", "a", "left");
 	inputmanager:map_scancodes("right", "d", "right");
 	inputmanager:map_scancodes("up", "w", "up");
+
+
+	gamestates:set_game_state("menu")
 
 	_DELAY_T = 0;
 	_DELAY_TT = 5;

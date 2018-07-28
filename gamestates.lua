@@ -6,6 +6,7 @@ local gamestates = {};
 gamestates.__gamestates_path = "gamestates/"
 gamestates._toload = {
 	playground = "playground.lua",
+	menu = "menu.lua",
 }
 
 gamestates.gamestates = {}

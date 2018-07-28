@@ -10,6 +10,9 @@ menu.__gui_paths = {
 }
 menu.gui_elements = {}
 
+local game_is_focused = true -- To denote whether the game is focused or not
+local generalbackgroundcolor = generalbackgroundcolor or colorutils:neww(160,90,20,255);
+local mousex, mousey = love.mouse.getPosition();
 --
 --> PRESETUP : BOXES ---------------------------------------------------------------------------------------------------------------
 --
@@ -79,12 +82,12 @@ menu.colors	=	{
 		outlineU					= colorutils:neww(255	,	255	,	255	,	255	),
 		textU						= colorutils:neww(255	,	255	,	255	,	255	),
 
-		inside1						= colorutils:neww(70		,	90	,	160	,	140 ),
+		inside1						= colorutils:neww(70	,	90	,	160	,	140 ),
 		outline1					= colorutils:neww(150	,	150	,	160	,	250	),
 		text1						= colorutils:neww(255	,	255	,	255	,	255	),
 
-		inside2						= colorutils:neww(90		,	70	,	140	,	150 ),
-		outline2					= colorutils:neww(70		,	90	,	160	,	240	),
+		inside2						= colorutils:neww(90	,	70	,	140	,	150 ),
+		outline2					= colorutils:neww(70	,	90	,	160	,	240	),
 		text2						= colorutils:neww(180	,	180	,	180	,	255	),
 
 		inside_actioned	    		= colorutils:neww(200	,	80	,	90	,	180	),
@@ -103,6 +106,7 @@ function menu:switched_to(...) -- If the gamestate is being switched from one ga
 end
 
 function menu:draw()
+	love.graphics.setBackgroundColor(generalbackgroundcolor);
 	love.graphics.push()
 		for k,v in pairs(self.boxmanager.boxes) do
 			if v.slide == self.slide then
@@ -123,6 +127,7 @@ function menu:draw()
 end
 
 function menu:update(dt)
+	mousex, mousey = love.mouse.getPosition();
 	local dtt = dt*4
 	if game_is_focused then
 		generalbackgroundcolor = generalbackgroundcolor(self.colors.background1, 2*dtt)
@@ -154,6 +159,10 @@ function menu:update(dt)
 			end
 		end
 	end
+end
+
+function menu:focus(f)
+	game_is_focused = f;
 end
 
 function menu:mousepressed(x, y, button, istouch)
@@ -228,21 +237,20 @@ end
 menu:load()
 --slide0
 menu.boxmanager:new(0, 50,	50		,		200,	50, "Continue", function() gamestates:set_game_state("playground") end)
-menu.boxmanager:new(0, 50,	330		,		200,	50, "About", function() menu.slide = 6 end)
-menu.boxmanager:new(0, 50,	400		,		200,	50, "Quit", function() love.event.quit() end)
+menu.boxmanager:new(0, 50,	120		,		200,	50, "About", function() menu.slide = 6 end)
+menu.boxmanager:new(0, 50,	190		,		200,	50, "Quit", function() love.event.quit() end)
 
 --slide2
 menu.boxmanager:new(2, width/2-50, height/2-25, 100, 50, "YOU WON", function()end)
 menu.boxmanager:new(2,	width-150, height-70, 100, 50, "Back", function() menu.slide = 1 end)
 
 --slide6
-menu.scrollmanager:new(6, 50, 50, width-150, height-150, [[This game was developped with LÖVE 11.1, also known as Love2d (https://love2d.org)
-
-The game code is written by a human.
-
-The sounds were made by : (didn't ask them if I can say their name)
-
-Most game libraries where made by that human]])
+menu.scrollmanager:new(6, 50, 50, width-150, height-150, [[
+This project (developped by human) is made initially in order to make a system for entities that works better. I called it ECS but I bet it isn't ECS in fully.
+Nonetheless I kinda like the way it works. After doing this ECS thing I pretty much moved on to adding the major libraries I've ever written to include them with this one.
+Now I probably should license this under GPL since I majorly incline to the goal of GPL but I'm not sure if I should or whether I should just keep it MIT.
+GPL really allures to me in it's copyleft spirit.
+Anyway, this is about the project, enough rambling I suppose.]])
 
 menu.boxmanager:new(6,	width-150, height-70, 100, 50, "Back", function() menu.slide = 0 end)
 

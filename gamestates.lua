@@ -12,8 +12,10 @@ gamestates._toload = {
 gamestates.gamestates = {}
 gamestates.current_game_state = nil;
 function gamestates:initialize(currgamestate)
+	print("Gamestates manager :")
 	for k,v in pairs(self._toload) do
 		self.gamestates[k] = love.filesystem.load(self.__gamestates_path..v)();
+		print("\t loaded the "..k)
 	end
 	if not currgamestate then
 		if self.gamestates[0] then

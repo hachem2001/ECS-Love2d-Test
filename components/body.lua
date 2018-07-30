@@ -7,16 +7,20 @@ ffi.cdef[[
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
 bodies.bodies = {}; -- contains the bodies
 bodies.boxes = {} -- used to divide the world into sections
-bodies.debug = true;
+bodies.debug = false;
 
 bodies.meter = 32;
+
 function bodies:to_meter(pixels)
     return pixels/self.meter;
 end
+
 function bodies:to_pixels(meters)
     return meters*self.meter;
 end
+
 bodies.gravity = vector(bodies:to_pixels(0), bodies:to_pixels(9.1));
+bodies.air_volumetric_mass = 0.12
 
 local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
 local min_box_w, min_box_h = 31, 31; -- Minimum box size
@@ -24,25 +28,34 @@ local num_on_div = 30; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 
-function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness) -- adds a rectangle (m is mass, friction is well, friction)
+function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness, air_drag_coefficient) -- adds a rectangle (m is mass, friction is well, friction)
+	
 	-- if m == -1 the 
+	
 	local mass = m or w*h
+	local air_drag_coefficient = air_drag_coefficient or 1
+
 	local m = {
 			pos=vector(x, y),
 			vel=vector(0,0),
+			force=vector(0,0),
 			w = w or 1, h = h or 1,
 			px=0, py=0,
+
 			m = mass or w*h,
 			friction = friction or 1,
+			air_drag_coefficient = air_drag_coefficient,
 			bounciness = bounciness or 0,
+
 			holder = {name = entity_name, id = entity_id}, -- the entity that is holding this
 			last_collided_with = {}, -- contains the last_entites that were collided with : { {entitytype, id}, {enttype, id}, ...}
 			-- if collision happened with the world, it would be {"world", block_id}
+
 			gravity_effect = 1,
+			static = mass < 0,
 			categories_to_avoid = {}, -- Avoid collision with bodies whose holder name is of such category. "world" is used for the.
 			ids_to_avoid = {}, -- Avoid collision with certain ids
 			collide = true, -- can be set to false to make it not collide with anything
-			static = mass < 0,
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
 	self.bodies[global_id] = m;
@@ -269,9 +282,14 @@ function bodies:pre_update(dt) -- physics update pre_update by default. Because 
 		if not v.static then
 			v.px = 0 -- Direction of X movement (before collision)
 			v.py = 0 -- Direction of Y movement (before collision)
-			v.vel = v.vel + self.gravity*v.gravity_effect*dt
-			v.pos = v.pos + v.vel*dt
+			v.force = v.force + v.m*self.gravity*v.gravity_effect;
+			-- The drag force will have the opposite of the velocity vector, hence I did -v.vel^() so it takes the direction of -vel and the length of 0.5*...
+			v.force = v.force - (#v.vel==0 and v.vel or v.vel^(0.5*self.air_volumetric_mass * (v.vel*v.vel) * v.air_drag_coefficient * v.w))
+			v.vel = v.vel + v.force/v.m*dt;
+			v.pos = v.pos + v.vel*dt;
 			v.last_collided_with = {};
+
+			v.force = v.force*0;
 		end
 	end
 	for X,vYs in pairs(self.boxes) do

@@ -37,7 +37,7 @@ function love.load()
 	inputmanager:map_scancodes("up", "w", "up");
 
 
-	gamestates:set_game_state("menu")
+	gamestates:set_game_state("playground")
 
 	_DELAY_T = 0;
 	_DELAY_TT = 5;

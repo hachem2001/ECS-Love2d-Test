@@ -4,21 +4,23 @@ function playground:switched_to(...) -- If the gamestate is being switched from 
 	ECS:initialize(true) -- reloads the ECS system.
 
 	-- Add a player
-	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.2, bounciness=0})
+	ECS:new_entity("player", {x=296, y=0, w=32, h=32, friction=0.1, bounciness=0})
 	-- Add NPCS
 	ECS:new_entity("npcs", {x=32, y=-128, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=-64, w=31, h=31, friction=0.2, bounciness=0.1})
 	ECS:new_entity("npcs", {x=32, y=0, w=31 , h=31, friction=0.2, bounciness=0.1})
 	-- Add some blocks
-	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.2, bounciness=0})
+	ECS:new_entity("world", {x=32, y=32, w=1024 , h=32, friction=0.1, bounciness=0})
 end
 
 function playground:draw()
 	love.window.setTitle(love.timer.getFPS());
 
+	love.graphics.setColor(1,1,1,1)
 	camera:set()
-	ECS:draw()
+		ECS:draw()
 	camera:unset()
+
 end
 
 function playground:update(dt)

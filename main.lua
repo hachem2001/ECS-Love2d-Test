@@ -6,7 +6,7 @@ math.randomseed(math.random(9999,99999)+os.time()*math.sin(os.time()))
 
 __GAME_VERSION = "0.0.0.0"
 
-function love.load()	
+function love.load()
 	width, height	= love.graphics.getDimensions()	-- Width and Height
 	mousex,mousey	= love.mouse.getPosition()		-- Get the position of the mouse
 
@@ -41,6 +41,8 @@ function love.load()
 
 	_DELAY_T = 0;
 	_DELAY_TT = 5;
+
+	print(love.filesystem.getWorkingDirectory())
 end
 
 --
@@ -64,11 +66,11 @@ function love.keyreleased(const, scancode, isrepeat)
 	inputmanager:keyreleased(const, scancode, isrepeat);
 	gamestates:keyreleased(const, scancode, isrepeat);
 end
- 
+
 function love.mousepressed(x, y, button, istouch)
 	inputmanager:mousepressed(x, y, button, istouch);
 	gamestates:mousepressed(x,y,button, istouch);
-end 
+end
 
 function love.mousereleased(x, y, button, istouch)
 	inputmanager:mousereleased(x, y, button, istouch)

@@ -19,7 +19,7 @@ local mousex, mousey = love.mouse.getPosition();
 
 -- ->boxmanager and scrollmanager setup
 menu.slide = 0 -- which slide to show and run.
-menu.boxmanager = {}
+menu.boxmanager = {current_selected=nil}
 menu.boxmanager.boxes = {}
 
 menu.scrollmanager = {}
@@ -31,6 +31,17 @@ menu.guiaddons.elements = {}
 function menu:load()
 	for k,v in pairs(self.__gui_paths) do
 		self.gui_elements[k] = love.filesystem.load(v)
+	end
+end
+
+function menu:set_slide(slide_number) -- sets the current slide number
+	self.slide = slide_number;
+	self.boxmanager.current_selected = nil;
+	for k,v in pairs(self.boxmanager.boxes) do
+		if v.slide == self.slide then
+			self.boxmanager.current_selected = k
+			break;
+		end
 	end
 end
 
@@ -137,7 +148,7 @@ function menu:update(dt)
 					v.insidecolor		= v.insidecolor(self.colors.boxes.inside_actioned, 2*dtt)
 					v.outlinecolor	    = v.outlinecolor(self.colors.boxes.outline_actioned, 2*dtt)
 					v.textcolor			= v.textcolor(self.colors.boxes.text_actioned, 2*dtt)
-				elseif collision.point_rec(mousex, mousey, v.x, v.y, v.w, v.h) then
+				elseif collision.point_rec(mousex, mousey, v.x, v.y, v.w, v.h) or self.boxmanager.current_selected == k then
 					v.insidecolor		= v.insidecolor(self.colors.boxes.inside2, dtt)
 					v.outlinecolor	    = v.outlinecolor(self.colors.boxes.outline2, dtt)
 					v.textcolor			= v.textcolor(self.colors.boxes.text2, dtt)
@@ -215,17 +226,62 @@ function menu:mousereleased(x, y, button, istouch)
 end
 
 function menu:keypressed(key, scancode, isrepeat)
+	local reacted = false;
 	for k,v in pairs(self.guiaddons.elements) do
 		if v.slide == self.slide then
 			v:keypressed(key, scancode, isrepeat)
+			reacted = true;
+		end
+	end
+	if not reacted then
+		if key == 'right' or key == 'left' or key == 'up' or key == 'down' then
+			local current_sel = self.boxmanager.boxes[self.boxmanager.current_selected];
+			if not current_sel then
+				current_sel = {0,0}
+			else
+				current_sel = {self.boxmanager.boxes[self.boxmanager.current_selected].x, self.boxmanager.boxes[self.boxmanager.current_selected].y}
+			end
+			local dirx, diry = key=='right' and 1 or (key=='left' and -1 or 0), key=='down' and 1 or (key=='up' and -1 or 0)
+			print(dirx, diry)
+			local last_smallest_x, last_smallest_y
+			local currtosel;
+			for k, v in pairs(self.boxmanager.boxes) do
+				if v.slide == self.slide then
+					local diffx, diffy = (v.x-current_sel[1]), (v.y-current_sel[2])
+					if not currtosel or (diffx/math.abs(diffx)==dirx and math.abs(diffx)<last_smallest_x and diffy/math.abs(diffy)==diry and math.abs(diffy)<last_smallest_y) then
+						currtosel = k;
+						last_smallest_x = math.abs(diffx);
+						last_smallest_y = math.abs(diffy);
+					end
+				end
+			end
+
+			if currtosel then
+				self.boxmanager.current_selected = currtosel;
+			end
+		elseif key == 'return' then
+			if self.boxmanager.current_selected then
+				self.boxmanager.boxes[self.boxmanager.current_selected].actioned = true
+			end
 		end
 	end
 end
 
 function menu:keyreleased(key, scancode, isrepeat)
+	local reacted = false;
 	for k,v in pairs(self.guiaddons.elements) do
 		if v.slide == self.slide then
 			v:keyreleased(key, scancode, isrepeat)
+			reacted = true;
+		end
+	end
+	if not reacted then
+		if key == 'return' then
+			if self.boxmanager.current_selected then
+				self.boxmanager.boxes[self.boxmanager.current_selected]:callback()
+				audiomanager:play("clickout")
+				self.boxmanager.boxes[self.boxmanager.current_selected].actioned = false
+			end
 		end
 	end
 end
@@ -237,12 +293,12 @@ end
 menu:load()
 --slide0
 menu.boxmanager:new(0, 50,	50		,		200,	50, "Continue", function() gamestates:set_game_state("playground") end)
-menu.boxmanager:new(0, 50,	120		,		200,	50, "About", function() menu.slide = 6 end)
+menu.boxmanager:new(0, 50,	120		,		200,	50, "About", function() menu:set_slide(6) end)
 menu.boxmanager:new(0, 50,	190		,		200,	50, "Quit", function() love.event.quit() end)
 
 --slide2
 menu.boxmanager:new(2, width/2-50, height/2-25, 100, 50, "YOU WON", function()end)
-menu.boxmanager:new(2,	width-150, height-70, 100, 50, "Back", function() menu.slide = 1 end)
+menu.boxmanager:new(2,	width-150, height-70, 100, 50, "Back", function() menu:set_slide(1) end)
 
 --slide6
 menu.scrollmanager:new(6, 50, 50, width-150, height-150, [[
@@ -252,7 +308,7 @@ Now I probably should license this under GPL since I majorly incline to the goal
 GPL really allures to me in it's copyleft spirit.
 Anyway, this is about the project, enough rambling I suppose.]])
 
-menu.boxmanager:new(6,	width-150, height-70, 100, 50, "Back", function() menu.slide = 0 end)
+menu.boxmanager:new(6,	width-150, height-70, 100, 50, "Back", function() menu:set_slide(0) end)
 
 --slide5
 menu.boxmanager:new(5, 50,	50			,		200,	50, "Sounds : on", function(self)
@@ -261,7 +317,7 @@ menu.boxmanager:new(5, 50,	50			,		200,	50, "Sounds : on", function(self)
 		audiomanager.playsounds = self.info;
 		end,
 		true)
-menu.boxmanager:new(5,	width-150, height-70, 100, 50, "Back", function() menu.slide = 0 end)
+menu.boxmanager:new(5,	width-150, height-70, 100, 50, "Back", function() menu:set_slide(0) end)
 
 
 --

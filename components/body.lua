@@ -282,14 +282,17 @@ function bodies:pre_update(dt) -- physics update pre_update by default. Because 
 		if not v.static then
 			v.px = 0 -- Direction of X movement (before collision)
 			v.py = 0 -- Direction of Y movement (before collision)
-			v.force = v.force + self.gravity*(v.m*v.gravity_effect);
+
+      -- Updating the position prematurely so the force and velocity the entities detect at the post update is simply the one they will move with next
+      v.pos = v.pos + v.vel*dt;
+
+			v.force = v.force + self.gravity*(v.m*v.gravity_effect); -- add gravity to the firce
 
 			-- The drag force will have the opposite of the velocity vector, hence I did -v.vel^() so it takes the direction of -vel and the length of 0.5*...
       v.force = v.force - (#v.vel==0 and v.vel or v.vel^(0.5*self.air_volumetric_mass * (v.vel*v.vel) * v.air_drag_coefficient * v.w))
 
-      v.vel = v.vel + (v.force/v.m)*dt;
-			v.pos = v.pos + v.vel*dt;
-			v.last_collided_with = {};
+      v.vel = v.vel + (v.force/v.m)*dt; -- update velocity
+			v.last_collided_with = {}; -- reinitialize the bodies collided with
 
 			v.force = v.force*0;
 		end

@@ -37,7 +37,7 @@ function love.load()
 	inputmanager:map_scancodes("left", "a", "left");
 	inputmanager:map_scancodes("right", "d", "right");
 	inputmanager:map_scancodes("up", "w", "up");
-
+	inputmanager:map_mouse("fire", 1);
 
 	gamestates:set_game_state("menu")
 

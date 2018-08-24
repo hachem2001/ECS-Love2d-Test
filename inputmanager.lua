@@ -65,8 +65,8 @@ function inputmanager:map_mouse(action, mousebutton)
 	if not self.mouse_buttons[mousebutton] then
 		self.mouse_buttons[mousebutton] = {}
 	end
-	self.actions[action][#self.actions[action]+1] = {"m", key, love.mouse.isDown(mousebutton)} -- First element is type of information, rest is info
-	self.action_states[action] = self.action_states[action] or love.mouse.isDown(key);
+	self.actions[action][#self.actions[action]+1] = {"m", mousebutton, love.mouse.isDown(mousebutton)} -- First element is type of information, rest is info
+	self.action_states[action] = self.action_states[action] or love.mouse.isDown(mousebutton);
 	-- since this is a scancode, the first element will be "s"
 	self.mouse_buttons[mousebutton][#self.mouse_buttons[mousebutton]+1] = action;
 end
@@ -162,11 +162,34 @@ function inputmanager:keyreleased(key, scancode, isrepeat)
 end
 
 function inputmanager:mousepressed(x, y, button, istouch)
-
+	if self.mouse_buttons[button] then
+		local kactions = self.mouse_buttons[button];
+		for i,v in ipairs(kactions) do
+			for k2,v2 in pairs(self.actions[v]) do
+				if v2[1] == "m" and v2[2] == button then
+					v2[3] = true;
+					self.action_states[v] = true;
+				end
+			end
+		end
+	end
 end
 
 function inputmanager:mousereleased(x, y, button, istouch)
-
+	if self.mouse_buttons[button] then
+		local kactions = self.mouse_buttons[button]
+		for i,v in ipairs(kactions) do
+			local result = false
+			for k2,v2 in pairs(self.actions[v]) do
+				if v2[1] == "m" and v2[2] == button then
+					v2[3] = false;
+				else
+					result = result or v2[3];
+				end
+			end
+			self.action_states[v] = result;
+		end
+	end
 end
 
 function inputmanager:joystickadded(Joystick)
@@ -174,7 +197,7 @@ function inputmanager:joystickadded(Joystick)
 end
 
 function inputmanager:joystickremoved(Joystick)
-	-- We can use Joystick:getID() to remove it from the joysticks list stored	
+	-- We can use Joystick:getID() to remove it from the joysticks list stored
 	for k=#self.joysticks,1,-1 do
 		local id = self.joysticks[k].__joystick:getID();
 		if id == Joystick.getID() then

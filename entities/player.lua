@@ -1,8 +1,9 @@
 --local player = ECS:raw_new_entity("base") -- Inheritence is no more a thing now.
 local player = {}
 
-local jdelay = 0.1;
+local jdelay, fdelay = 0.1, 0.1;
 player.jump_delay = jdelay;
+player.fire_delay = fdelay
 player.speed = 200;
 function player:add(info) -- initializes the player
 	-- since there is only one player, this really simply replaces the current player
@@ -38,7 +39,7 @@ end
 function player:update(dt) -- In the future, I might seperate the update function into a "post physics" update and a
 	-- Pre physics update.
 	self.jump_delay = self.jump_delay - dt;
-
+	self.fire_delay = self.fire_delay - dt;
 	-- Handle collisions
 	for k,v in pairs(self.body.last_collided_with) do
 		-- Do stuff here
@@ -58,16 +59,21 @@ function player:update(dt) -- In the future, I might seperate the update functio
 		self.body.vel.y = self.body.vel.y - ECS.components.body:to_pixels(9.1); -- Relative jump.
 		self.jump_delay = jdelay;
 	end
+
+	if inputmanager:get_action("fire") and self.fire_delay<0 then
+		local wx, wy = camera:get_world_coordinates(love.mouse.getPosition());
+		local dir = vector(wx-self.body.pos.x, wy-self.body.pos.y);
+		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true, shooter_speed=self.body.vel});
+		self.fire_delay = fdelay;
+	end
 end
 
 function player:mousepressed(x, y, button)
 	--ECS:queue_entity_destroy("player", 1) -- any index really, because one player is used
 	local wx, wy = camera:get_world_coordinates(x, y);
 
-	local dir = vector(wx-self.body.pos.x, wy-self.body.pos.y)
-	if button == 1 then
-		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true, shooter_speed=self.body.vel})
-	elseif button == 2 then -- spawn bullet
+	--local dir = vector(wx-self.body.pos.x, wy-self.body.pos.y)
+	if button == 2 then -- spawn bullet
 		local w, h = 32, 32
 		ECS:new_entity("world", {x=wx-w/2, y=wy-h/2, w=w , h=h, friction=0.6, bounciness=0.1})
 	elseif button == 3 then -- spawn npc

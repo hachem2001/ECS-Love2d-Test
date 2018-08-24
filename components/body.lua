@@ -1,8 +1,7 @@
 --[[local ffi = require "ffi"
 -- x y w and h are self explanatory. vx and vy are the velocity, m is the mass. f is the friction and b is the bounciness
-ffi.cdef[[
-	typedef struct {double x, y, vx, vy, w, h, m, f, b; } body_t;
-]]
+--ffi.cdef("typedef struct {double x, y, vx, vy, w, h, m, f, b; } body_t;")
+]]--
 
 local bodies = {} -- or to be more precise : "rigidbody" like in Unity or such
 bodies.bodies = {}; -- contains the bodies
@@ -23,26 +22,27 @@ bodies.gravity = vector(bodies:to_pixels(0), bodies:to_pixels(9.1));
 bodies.air_volumetric_mass = 0.12
 
 local BOX_DIV_W, BOX_DIV_H = 128, 128; -- divides the world by boxes
-local min_box_w, min_box_h = 31, 31; -- Minimum box size
+local min_box_w, min_box_h = 15, 15; -- Minimum box size
 local num_on_div = 30; -- Number of entities on which a box would split on 4
 
 local global_id = 1;
 
-function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness, air_drag_coefficient) -- adds a rectangle (m is mass, friction is well, friction)
-	
-	-- if m == -1 the 
-	
-	local mass = m or w*h
-	local air_drag_coefficient = air_drag_coefficient or 1
+function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness, adc) -- adds a rectangle (m is mass, friction is well, friction)
 
-	local m = {
+	-- if m == -1 the
+
+	local mass = m or w*h
+
+  local air_drag_coefficient = adc or 1
+
+	local mm = {
 			pos=vector(x, y),
 			vel=vector(0,0),
 			force=vector(0,0),
 			w = w or 1, h = h or 1,
 			px=0, py=0,
 
-			m = mass or w*h,
+			m = mass,
 			friction = friction or 1,
 			air_drag_coefficient = air_drag_coefficient,
 			bounciness = bounciness or 0,
@@ -58,9 +58,9 @@ function bodies:add(entity_name, entity_id, x, y, w, h, m, friction, bounciness,
 			collide = true, -- can be set to false to make it not collide with anything
 		}
 	-- PX and PY contain the push on the X and Y axis respectively, after a collision happened
-	self.bodies[global_id] = m;
+	self.bodies[global_id] = mm;
 	global_id = global_id + 1;
-	return global_id-1, m;
+	return global_id-1, mm;
 end
 
 function bodies:avoid_category(id, category_to_avoid)
@@ -140,7 +140,7 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 	-- of the two are tweaked such that some part of each gets added to the other's
 	local v, v2 = obj1, obj2
 	local result, chx, chy = coll_box_box(v.pos.x, v.pos.y, v.w, v.h, v2.pos.x, v2.pos.y, v2.w, v2.h)
-	if result then		
+	if result then
 		local friction_line_vector; -- vector representing the plane on which friction occurs.
 		-- ^ this vector MUST BE normal. In case of a rotational world, the reason for this becomes even more obvious.
 		local bounce_vector;
@@ -157,7 +157,7 @@ local function collide_obj(obj1, obj2) -- With 2 colliding objects, the objects 
 		local friction_vec_vel = friction_line_vector * (friction_line_vector*DIFF_VEC_VEL); -- Get the friction vector part of the difference vector
 		local non_friction_vec_vel = DIFF_VEC_VEL - friction_vec_vel;
 		local friction_product = v.friction * v2.friction -- Yes, I work with the product of the frictions of the two objects
-		
+
 		-- Precalculate some things :
 		local Friction_add_vel = friction_vec_vel * (1- (1/(1+friction_product)));
 		local sum = Friction_add_vel + non_friction_vec_vel + bounce_vector;
@@ -193,7 +193,7 @@ function bodies:div_box(tbl, divw, divh, X, Y, dt)
 		local first_box_X, first_box_Y = math.max(X/divw, math.floor((v.pos.x-v.w/2-mx)/divw)), math.max(Y/divh, math.floor((v.pos.y-v.h/2-my)/divh))
 		local end_X, end_Y = math.min((X+divw)/divw, math.floor((v.pos.x+v.w/2+mx)/divw)), math.min((Y+divh)/divh, math.floor((v.pos.y+v.h/2+my)/divh))
 
-		for MMX=first_box_X, end_X do 
+		for MMX=first_box_X, end_X do
 			for MMY=first_box_Y, end_Y do
 				local MX, MY = MMX*divw,MMY*divh;
 				if ms[MX] then
@@ -229,7 +229,7 @@ function bodies:update_boxes(dt) -- updates the layouts
 		local first_box_X, first_box_Y = math.floor((v.pos.x-v.w/2-mx)/BOX_DIV_W), math.floor((v.pos.y-v.h/2-my)/BOX_DIV_H)
 		local end_X, end_Y = math.floor((v.pos.x+v.w/2+mx)/BOX_DIV_W), math.floor((v.pos.y+v.h/2+my)/BOX_DIV_H)
 
-		for X=first_box_X, end_X do 
+		for X=first_box_X, end_X do
 			for MY=first_box_Y, end_Y do
 				local MX, MY = X*BOX_DIV_W, MY*BOX_DIV_H;
 				if self.boxes[MX] then
@@ -282,10 +282,12 @@ function bodies:pre_update(dt) -- physics update pre_update by default. Because 
 		if not v.static then
 			v.px = 0 -- Direction of X movement (before collision)
 			v.py = 0 -- Direction of Y movement (before collision)
-			v.force = v.force + v.m*self.gravity*v.gravity_effect;
+			v.force = v.force + self.gravity*(v.m*v.gravity_effect);
+
 			-- The drag force will have the opposite of the velocity vector, hence I did -v.vel^() so it takes the direction of -vel and the length of 0.5*...
-			v.force = v.force - (#v.vel==0 and v.vel or v.vel^(0.5*self.air_volumetric_mass * (v.vel*v.vel) * v.air_drag_coefficient * v.w))
-			v.vel = v.vel + v.force/v.m*dt;
+      v.force = v.force - (#v.vel==0 and v.vel or v.vel^(0.5*self.air_volumetric_mass * (v.vel*v.vel) * v.air_drag_coefficient * v.w))
+
+      v.vel = v.vel + (v.force/v.m)*dt;
 			v.pos = v.pos + v.vel*dt;
 			v.last_collided_with = {};
 
@@ -313,7 +315,7 @@ function bodies:pre_update(dt) -- physics update pre_update by default. Because 
 									end
 									if coll then
 										obj1.last_collided_with[#obj1.last_collided_with+1] = {obj2.holder.name, obj2.holder.id};
-										obj2.last_collided_with[#obj2.last_collided_with+1] = {obj1.holder.name, obj1.holder.id};		
+										obj2.last_collided_with[#obj2.last_collided_with+1] = {obj1.holder.name, obj1.holder.id};
 									end
 								end
 							end

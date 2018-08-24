@@ -7,7 +7,7 @@ function npcs:add(info) -- adds the NPCS
 	local m = {}
 	local w,h = info.w or 32, info.h or 32
 	m.body_id, m.body = ECS:new_component("body", 'npcs', global_id, (info.x or 32)+w/2, (info.y or 32)+h/2, w, h, info.m, info.friction, info.bounciness)
-	
+
 	self.npcs[global_id] = m;
 	global_id = global_id+1;
 end
@@ -22,7 +22,7 @@ end
 --> Events
 --
 
-local DELAY = 0.001;
+local DELAY = 0.05;
 local delay = DELAY;
 local shooting_angle = 0;
 local Tau = 2*math.pi;
@@ -39,7 +39,7 @@ function npcs:update(dt)
 				local direction = vector(1, 0)%shooting_angle;
 				ECS:new_entity("pushpellets", {pos = vector(v.body.pos.x, v.body.pos.y),
 								direction=direction,
-								name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true})
+								name = 'npcs', id = k, giver_body_id = v.body_id, avoid_type=true, shooter_speed=v.body.vel})
 			end
 		end
 		delay = DELAY;

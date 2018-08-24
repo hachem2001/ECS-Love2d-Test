@@ -7,7 +7,7 @@ player.speed = 200;
 function player:add(info) -- initializes the player
 	-- since there is only one player, this really simply replaces the current player
 	local w,h = info.w or 32, info.h or 32
-	player.body_id, player.body = ECS:new_component("body", "player", 1, (info.x or 32)+w/2, (info.y or 32)+h/2, w, h, info.m, 
+	player.body_id, player.body = ECS:new_component("body", "player", 1, (info.x or 32)+w/2, (info.y or 32)+h/2, w, h, info.m,
 info.friction, info.bounciness)
 end
 
@@ -30,7 +30,7 @@ end
 
 function player:is_on_ground()
 	--This way is to make sure that if the player lands on a second player and the 2 are falling, or lands on land
-	--then the player can still relatively jump 
+	--then the player can still relatively jump
 	return self.body.py<0;
 end
 
@@ -65,11 +65,14 @@ function player:mousepressed(x, y, button)
 	local wx, wy = camera:get_world_coordinates(x, y);
 
 	local dir = vector(wx-self.body.pos.x, wy-self.body.pos.y)
-	if button == 1 then	
-		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true})
-	elseif button == 2 then
+	if button == 1 then
+		ECS:new_entity("bullets", {giver_body_id = self.body_id, name="player", id=1, pos=self.body.pos, direction=dir, avoid_type=true, shooter_speed=self.body.vel})
+	elseif button == 2 then -- spawn bullet
 		local w, h = 32, 32
 		ECS:new_entity("world", {x=wx-w/2, y=wy-h/2, w=w , h=h, friction=0.6, bounciness=0.1})
+	elseif button == 3 then -- spawn npc
+		local w, h = 31, 31;
+		ECS:new_entity("npcs", {x=wx-w/2, y=wy-h/2, w=w , h=h, friction=0.2, bounciness=0.1})
 	end
 end
 

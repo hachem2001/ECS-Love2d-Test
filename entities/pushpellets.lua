@@ -1,7 +1,7 @@
 local pushpellets = {}
 pushpellets.pushpellets = {}
 
-local pushpelletcolor = colorutils:neww(210, 0, 0, 255)
+local pushpelletcolor = colorutils:neww(210, 120, 120, 255)
 local pushpelletspeed = 300;
 local pushpelletmass = 200;
 local pushpellet_life_time = 1.5;
@@ -19,7 +19,7 @@ function pushpellets:add(info)
     local w,h = info.w or 2, info.h or 2
     local body_id, body = ECS:new_component(
         "body", "pushpellets", index, info.pos.x or 0, info.pos.y or 0, w, h,
-        pushpelletmass)
+        pushpelletmass, 0, 0, 0.1)
     local m = {body_id=body_id,
         body=body,
         holder={
@@ -39,8 +39,8 @@ function pushpellets:add(info)
     end
     --ECS.components['body']:avoid_category(m.body_id, "pushpellets");
 
-    m.body.gravity_effect = 0.01;
-    m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed; -- length = 1
+    m.body.gravity_effect = 1;
+    m.body.vel = (info.direction or error('info.direction vector no given', 2))^1 * pushpelletspeed +  (info.shooter_speed or vector(0,0)); -- length = 1
     self.pushpellets[global_id] = m;
     global_id = global_id + 1;
 

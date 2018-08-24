@@ -1,6 +1,8 @@
 local playground = {}
 
 function playground:switched_to(...) -- If the gamestate is being switched from one gamestate to this current one. Info can be given through this.
+	love.graphics.setBackgroundColor(0.2, 0.2, 0.2, 1);
+
 	ECS:initialize(true) -- reloads the ECS system.
 
 	-- Add a player

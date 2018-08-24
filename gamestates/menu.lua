@@ -36,7 +36,10 @@ end
 
 function menu:set_slide(slide_number) -- sets the current slide number
 	self.slide = slide_number;
-	self.boxmanager.current_selected = nil;
+	if self.boxmanager.current_selected ~= nil then
+		self.boxmanager.boxes[self.boxmanager.current_selected].actioned = false
+		self.boxmanager.current_selected = nil;
+	end
 	for k,v in pairs(self.boxmanager.boxes) do
 		if v.slide == self.slide then
 			self.boxmanager.current_selected = k
@@ -242,21 +245,27 @@ function menu:keypressed(key, scancode, isrepeat)
 				current_sel = {self.boxmanager.boxes[self.boxmanager.current_selected].x, self.boxmanager.boxes[self.boxmanager.current_selected].y}
 			end
 			local dirx, diry = key=='right' and 1 or (key=='left' and -1 or 0), key=='down' and 1 or (key=='up' and -1 or 0)
-			print(dirx, diry)
 			local last_smallest_x, last_smallest_y
 			local currtosel;
 			for k, v in pairs(self.boxmanager.boxes) do
-				if v.slide == self.slide then
+				if v.slide == self.slide and k ~= self.boxmanager.current_selected then
 					local diffx, diffy = (v.x-current_sel[1]), (v.y-current_sel[2])
-					if not currtosel or (diffx/math.abs(diffx)==dirx and math.abs(diffx)<last_smallest_x and diffy/math.abs(diffy)==diry and math.abs(diffy)<last_smallest_y) then
-						currtosel = k;
-						last_smallest_x = math.abs(diffx);
-						last_smallest_y = math.abs(diffy);
+					if (diffx*dirx>=0 and diffy*diry>=0 ) then
+						if not last_smallest_x or (math.abs(diffx)<=last_smallest_x and math.abs(diffy)<=last_smallest_y) then
+							currtosel = k;
+							last_smallest_x = math.abs(diffx);
+							last_smallest_y = math.abs(diffy);
+						end
 					end
+
+					print(v.x, v.y, diffx, diffy, last_smallest_x, last_smallest_y);
 				end
 			end
 
 			if currtosel then
+				if self.boxmanager.boxes[self.boxmanager.current_selected] then
+					self.boxmanager.boxes[self.boxmanager.current_selected].actioned = false;
+				end
 				self.boxmanager.current_selected = currtosel;
 			end
 		elseif key == 'return' then
@@ -277,7 +286,7 @@ function menu:keyreleased(key, scancode, isrepeat)
 	end
 	if not reacted then
 		if key == 'return' then
-			if self.boxmanager.current_selected then
+			if self.boxmanager.current_selected and self.boxmanager.boxes[self.boxmanager.current_selected].actioned then
 				self.boxmanager.boxes[self.boxmanager.current_selected]:callback()
 				audiomanager:play("clickout")
 				self.boxmanager.boxes[self.boxmanager.current_selected].actioned = false

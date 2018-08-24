@@ -7,6 +7,8 @@ math.randomseed(math.random(9999,99999)+os.time()*math.sin(os.time()))
 __GAME_VERSION = "0.0.0.0"
 
 function love.load()
+	print("Working directory : "..love.filesystem.getWorkingDirectory())
+
 	width, height	= love.graphics.getDimensions()	-- Width and Height
 	mousex,mousey	= love.mouse.getPosition()		-- Get the position of the mouse
 
@@ -42,7 +44,6 @@ function love.load()
 	_DELAY_T = 0;
 	_DELAY_TT = 5;
 
-	print(love.filesystem.getWorkingDirectory())
 end
 
 --
